@@ -5,11 +5,8 @@ services:
     command: --default-authentication-plugin=mysql_native_password
     ports:
       - "3307:3306"
-    environment:
-      MYSQL_ROOT_PASSWORD: 1234
-      MYSQL_DATABASE: beanspot
-      MYSQL_USER: app
-      MYSQL_PASSWORD: app1234
+    env_file:
+      - .env
     volumes:
       - mysql-data:/var/lib/mysql
     healthcheck:
@@ -18,57 +15,52 @@ services:
       retries: 5
 
   elasticsearch:
-    build:
-      context: ./docker/elasticsearch
+    image: elasticsearch:8.12.0
     container_name: elasticsearch
     environment:
       - discovery.type=single-node
       - xpack.security.enabled=false
       - ES_JAVA_OPTS=-Xms512m -Xmx512m
-    ports:
-      - "9200:9200"
-      - "9300:9300"
     volumes:
       - es-data:/usr/share/elasticsearch/data
-    networks:
-      - es_network
-  kibana:
-    image: kibana:8.12.0
-    container_name: kibana
-    environment:
-      - ELASTICSEARCH_HOSTS=http://elasticsearch:9200
-    ports:
-      - "5601:5601"
-    depends_on:
-      - elasticsearch
-    networks:
-      - es_network
+#    networks:
+#      - es_network
+#  kibana:
+#    image: kibana:8.12.0
+#    container_name: kibana
+#    environment:
+#      - ELASTICSEARCH_HOSTS=http://elasticsearch:9200
+#    ports:
+#      - "5601:5601"
+#    depends_on:
+#      - elasticsearch
+#    networks:
+#      - es_network
 
-  flyway:
-    image: flyway/flyway:9
-    depends_on:
-      mysql:
-        condition: service_healthy
-    command: >
-      -url=jdbc:mysql://mysql:3306/beanspot?allowPublicKeyRetrieval=true&useSSL=false
-      -user=app
-      -password=app1234
-      migrate
-    volumes:
-      - ./src/main/resources/db/migration:/flyway/sql
+#  flyway:
+#    image: flyway/flyway:9
+#    depends_on:
+#      mysql:
+#        condition: service_healthy
+#    command: >
+#      -url=jdbc:mysql://mysql:3306/beanspot?allowPublicKeyRetrieval=true&useSSL=false
+#      -user=app
+#      -password=app1234
+#      migrate
+#    volumes:
+#      - ./src/main/resources/db/migration:/flyway/sql
 
   app:
-    build:
-      context: .
-      dockerfile: docker/app/Dockerfile
-    container_name: spring-app
+    #build:
+    #  context: .
+    #  dockerfile: docker/app/Dockerfile
+    image: 258143933136.dkr.ecr.ap-northeast-2.amazonaws.com/beanspot-app:latest
+    container_name: beanspot-app
+    env_file:
+      - .env
+    restart: always
     ports:
       - "8080:8080"
-    environment:
-      SPRING_PROFILES_ACTIVE: dev
-      SPRING_DATASOURCE_URL: jdbc:mysql://mysql:3306/beanspot?allowPublicKeyRetrieval=true&useSSL=false
-      SPRING_DATASOURCE_USERNAME: app
-      SPRING_DATASOURCE_PASSWORD: app1234
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:8080/actuator/health"]
       interval: 30s
