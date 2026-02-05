@@ -6,6 +6,7 @@ import com.beanspot.backend.dto.auth.LoginUserDTO;
 import com.beanspot.backend.dto.auth.SignUpSocialUserDTO;
 import com.beanspot.backend.dto.auth.SignUpUserDTO;
 import com.beanspot.backend.dto.user.UserProfileDTO;
+import com.beanspot.backend.entity.Role;
 import com.beanspot.backend.entity.SocialType;
 import com.beanspot.backend.entity.User;
 import com.beanspot.backend.repository.UserRepository;
@@ -51,7 +52,8 @@ public class UserServiceImpl implements UserService {
                 .password(passwordEncoder.encode(userDTO.getPassword()))
                 .nickname(userDTO.getNickname())
                 .name(userDTO.getName())
-                .socialType(com.beanspot.backend.entity.SocialType.NONE)
+                .socialType(SocialType.NONE)
+                .role(userDTO.getRole() == null ? Role.USER : userDTO.getRole())
                 .build();
 
         userRepository.save(user);
@@ -84,12 +86,18 @@ public class UserServiceImpl implements UserService {
                 .accessToken(accessToken)
                 .nickname(user.getNickname())
                 .id(user.getId())
+                .role(user.getRole().name())
                 .build();
         return reponseUserDTO;
     }
 
     public boolean isNicknameAvailable(final String nickname) {
         return !userRepository.existsByNickname(nickname);
+    }
+
+    @Override
+    public boolean isUserIdAvailable(String userId) {
+        return !userRepository.existsByUserId(userId);
     }
 
     @Override
@@ -115,6 +123,7 @@ public class UserServiceImpl implements UserService {
                     .accessToken(accessToken)
                     .nickname(user.get().getNickname())
                     .id(user.get().getId())
+                    .role(user.get().getRole().name())
                     .isProfileComplete(true)
                     .build();
         }else{

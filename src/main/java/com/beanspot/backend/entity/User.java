@@ -42,6 +42,10 @@ public class User extends BaseEntity{
 
     private String address; // 주소
 
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    private Role role = Role.USER; // USER 혹은 ADMIN 저장
+
     @Column(name = "refresh_token")
     private String refreshToken;
 
