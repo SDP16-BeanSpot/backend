@@ -38,6 +38,8 @@ jwt:
   issuer: ${JWT_ISSUER}
   secret: ${JWT_SECRET}
   allowed-clock-skew-seconds: ${JWT_ALLOWED_CLOCK_SKEW_SECONDS}
+  token-validity-in-seconds: ${JWT_TOKEN_VALIDITY_IN_SECONDS}
+  refresh-token-validity-in-seconds: ${JWT_REFRESH_TOKEN_VALIDITY_IN_SECONDS}
 
 oauth:
   kakao:
