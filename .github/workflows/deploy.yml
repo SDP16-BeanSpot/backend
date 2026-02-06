@@ -50,11 +50,6 @@ jobs:
           username: ${{ secrets.EC2_USERNAME }}
           key: ${{ secrets.EC2_PRIVATE_KEY }}
           script: |
-            docker stop beanspot-app || true
-            docker rm beanspot-app || true
+            cd /home/ubuntu/beanspot
             docker pull ${{ steps.login-ecr.outputs.registry }}/beanspot-app:latest 
-            docker run -d \
-            --name beanspot-app \
-            --env-file /home/ubuntu/.env \
-            -p 8080:8080 \
-            ${{ steps.login-ecr.outputs.registry }}/beanspot-app:latest
+            docker compose up -d --remove-orphans
