@@ -12,20 +12,19 @@ public class SwaggerConfig {
     @Bean
     public OpenAPI customOpenAPI() {
         SecurityScheme securityScheme = new SecurityScheme()
-                .type(SecurityScheme.Type.HTTP)
-                .scheme("bearer")
+                .type(SecurityScheme.Type.APIKEY)
                 .bearerFormat("JWT")
                 .in(SecurityScheme.In.HEADER)
                 .name("Authorization");
 
-        SecurityRequirement securityRequirement = new SecurityRequirement().addList("bearerAuth");
+        SecurityRequirement securityRequirement = new SecurityRequirement().addList("Bearer Token");
 
         return new OpenAPI()
                 .info(new Info()
                         .title("Beanspot Backend API")
                         .version("v1.0"))
                 .addSecurityItem(securityRequirement)
-                .schemaRequirement("BearerAuth", securityScheme);
+                .schemaRequirement("Bearer Token", securityScheme);
 
     }
 }
