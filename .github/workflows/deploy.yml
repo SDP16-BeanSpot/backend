@@ -60,7 +60,8 @@ jobs:
             docker pull ${{ steps.login-ecr.outputs.registry }}/beanspot-app:latest
             
             # 4. 기존 컨테이너 중지 및 삭제
-            docker compose down
+            docker rm -f beanspot-app || true
+            
             
             # 5. 새 컨테이너 실행
-            docker compose up -d --remove-orphans
+            docker compose up -d beanspot-app
