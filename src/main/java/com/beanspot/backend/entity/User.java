@@ -48,7 +48,7 @@ public class User extends BaseEntity { // BaseEntity 상속으로 생성/수정 
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
-    private Role role; // ROLE_USER, ROLE_ADMIN
+    private Role role; // USER 혹은 ADMIN
 
     /**
      * 💡 핵심 수정 사항: 데이터 저장 전 기본값 할당
@@ -58,7 +58,7 @@ public class User extends BaseEntity { // BaseEntity 상속으로 생성/수정 
     @PrePersist
     public void prePersist() {
         if (this.role == null) {
-            this.role = Role.ROLE_USER; // 타입을 Role로 통일!
+            this.role = Role.USER; // 타입을 Role로 통일!
         }
     }
 

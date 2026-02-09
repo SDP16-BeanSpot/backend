@@ -32,7 +32,9 @@ public class CustomUserDetailService implements UserDetailsService {
         return UserPrincipal.from(user);
     }
     public UserDetails loadUserBySocicalId(String socicalId) {
-        User user = User.builder().socialId(socicalId).build();
+        User user = User.builder()
+                .socialId(socicalId)
+                .build();
 
         return UserPrincipal.from(user);
     }

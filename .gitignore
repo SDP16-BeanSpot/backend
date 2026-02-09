@@ -39,3 +39,14 @@ out/
 src/main/resources/application-*.yml
 gradle.properties
 
+### Docker / Env ###
+.env
+.env.*
+
+### Docker volumes ###
+mysql-data/
+es-data/
+
+### OS ###
+.DS_Store
+Thumbs.db

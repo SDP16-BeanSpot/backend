@@ -28,11 +28,13 @@ public class WebSecurityConfig {
                 .cors(Customizer.withDefaults())
                 .httpBasic(AbstractHttpConfigurer::disable)
                 .authorizeHttpRequests((auth) -> auth
+                        .requestMatchers("/api/admin/**").hasRole("ADMIN")
                         .requestMatchers("/",
                                 "/api/auth/**",
                                 "/swagger-ui/**",
                                 "/v3/api-docs/**",
-                                "/webjars/**").permitAll()
+                                "/webjars/**",
+                                "/docs/**").permitAll()
                         .anyRequest().authenticated()
 
                 ).exceptionHandling(exception -> exception
