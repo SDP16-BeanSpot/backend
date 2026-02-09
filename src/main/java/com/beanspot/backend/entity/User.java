@@ -8,63 +8,73 @@ import lombok.*;
 @Builder
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor
-@Table(uniqueConstraints = {@UniqueConstraint(columnNames = "nickname")})
-public class User extends BaseEntity{
+@Table(name = "user", uniqueConstraints = {@UniqueConstraint(columnNames = "nickname")})
+public class User extends BaseEntity { // BaseEntity 상속으로 생성/수정 시간 관리
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
     @Column(name = "user_id")
-    private String userId; // 사용자 아이디
+    private String userId; // 사용자 로그인 아이디
 
     @Column(name = "password", length = 100)
-    private String password; // 비밀번호
+    private String password; // 암호화된 비밀번호
 
-    private String name; // 본명
+    private String name; // 사용자 실명
 
     @Column(unique = true, nullable = false, length = 15)
-    private String nickname; // 닉네임
-
+    private String nickname; // 서비스 활동 닉네임
 
     @Enumerated(EnumType.STRING)
     @Column(name = "social_type")
-    private SocialType socialType; // 카카오, 네이버 등
+    private SocialType socialType; // KAKAO, NAVER 등
 
     @Column(name = "social_id", unique = true)
-    private String socialId;
-
+    private String socialId; // 소셜 서비스 고유 식별값
 
     @Column(name = "profile_url")
     private String profileUrl; // 프로필 이미지 경로
 
     @Column(length = 20, unique = true)
-    private String phone; // 휴대번호
+    private String phone; // 연락처
 
-    private String address; // 주소
+    private String address; // 주소 정보
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     private Role role = Role.USER; // USER 혹은 ADMIN 저장
 
     @Column(name = "refresh_token")
-    private String refreshToken;
+    private String refreshToken; // JWT 갱신용 토큰
 
-    private boolean emailVerified;
+    private boolean emailVerified; // 이메일 인증 여부
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
-    private Role role; // ROLE_USER, ROLE_ADMIN
+    private Role role; // USER 혹은 ADMIN
 
+    /**
+     * 💡 핵심 수정 사항: 데이터 저장 전 기본값 할당
+     * @Builder 사용 시 필드 초기값이 null이 되는 문제를 방지합니다.
+     */
 
+    @PrePersist
+    public void prePersist() {
+        if (this.role == null) {
+            this.role = Role.USER; // 타입을 Role로 통일!
+        }
+    }
+
+    /**
+     * 프로필 정보 업데이트 (닉네임 및 이미지)
+     */
     public void updateProfile(String nickname, String profileUrl) {
-        // 닉네임이 비어있지 않은 경우에만 업데이트 (피그마 3-2 반영)
         if (nickname != null && !nickname.isBlank()) {
             this.nickname = nickname;
         }
-        // 새로운 이미지 경로가 들어온 경우에만 업데이트 (피그마 2 반영)
         if (profileUrl != null) {
             this.profileUrl = profileUrl;
         }
     }
-
 }
