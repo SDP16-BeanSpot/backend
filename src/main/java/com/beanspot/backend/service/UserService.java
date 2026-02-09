@@ -12,6 +12,7 @@ public interface UserService {
     User getByCredential(final String email, final String password, PasswordEncoder encoder);
     LoginUserDTO.Res login(LoginUserDTO.Req userDTO, PasswordEncoder encoder);
     boolean isNicknameAvailable(final String nickname);
+    boolean isUserIdAvailable(final String userId);
     UserProfileDTO getUserProfileById(final Long id);
     SignUpSocialUserDTO.Res createSocialUser(final String socialId, final SignUpSocialUserDTO.Req userDTO);
     LoginUserDTO.Res loginBySocialId(final String socialType, final String socialId);
