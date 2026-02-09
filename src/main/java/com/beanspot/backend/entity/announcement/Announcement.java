@@ -67,8 +67,8 @@ public class Announcement extends BaseEntity {
     // volunteer
     @Column(name = "service_hours_verified")
     private String serviceHoursVerified;       //봉사시간 인정 여부 -> null이면 미인정
-
     //Supporter
+
     @Column(name = "selection_process",columnDefinition = "TEXT")
     private String selectionProcess;        //심사 방식
     @Column(name = "award_scale", columnDefinition = "TEXT")
@@ -76,6 +76,5 @@ public class Announcement extends BaseEntity {
 
     @Column(name = "team_size")
     private String teamSize;        //팀원 규모
-
 
 }

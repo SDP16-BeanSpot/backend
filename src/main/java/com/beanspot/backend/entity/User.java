@@ -41,6 +41,7 @@ public class User extends BaseEntity { // BaseEntity 상속으로 생성/수정 
 
     private String address; // 주소 정보
 
+
     @Column(name = "refresh_token")
     private String refreshToken; // JWT 갱신용 토큰
 
