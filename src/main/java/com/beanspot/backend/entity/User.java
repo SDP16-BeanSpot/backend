@@ -51,4 +51,20 @@ public class User extends BaseEntity{
 
     private boolean emailVerified;
 
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    private Role role; // ROLE_USER, ROLE_ADMIN
+
+
+    public void updateProfile(String nickname, String profileUrl) {
+        // 닉네임이 비어있지 않은 경우에만 업데이트 (피그마 3-2 반영)
+        if (nickname != null && !nickname.isBlank()) {
+            this.nickname = nickname;
+        }
+        // 새로운 이미지 경로가 들어온 경우에만 업데이트 (피그마 2 반영)
+        if (profileUrl != null) {
+            this.profileUrl = profileUrl;
+        }
+    }
+
 }
