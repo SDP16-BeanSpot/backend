@@ -33,6 +33,8 @@ public class WebSecurityConfig {
                                 "/swagger-ui/**",
                                 "/v3/api-docs/**",
                                 "/webjars/**").permitAll()
+                        // 웹소켓 엔드포인트에 대한 접근 허용
+                        .requestMatchers("/ws-stomp/**").permitAll()
                         .anyRequest().authenticated()
 
                 ).exceptionHandling(exception -> exception

@@ -1,5 +1,7 @@
 package com.beanspot.backend.service;
 
+import com.beanspot.backend.common.exception.CustomException;
+import com.beanspot.backend.common.exception.ErrorCode;
 import com.beanspot.backend.dto.chat.ChatMessageDto;
 import com.beanspot.backend.entity.ChatMessage;
 import com.beanspot.backend.entity.ChatRoom;
@@ -27,30 +29,27 @@ public class ChatService {
      * 채팅 메시지 저장
      */
     @Transactional
-    public void saveMessage(ChatMessageDto messageDto) {
-        // 1. 해당 채팅방 엔티티 조회
+    public void saveMessage(ChatMessageDto messageDto, String userId) {// userId 추가
+        // 1. 넘겨받은 ID(인터셉터에서 추출한 진짜 ID)로 DB에서 유저 찾기
+        User sender = userRepository.findById(Long.parseLong(userId))
+                .orElseThrow(() -> new CustomException(ErrorCode.USER_NOT_FOUND));
+
+        // 2. 해당 채팅방 엔티티 조회 (기존 로직 유지)
         ChatRoom room = chatRoomRepository.findById(Long.parseLong(messageDto.getRoomId()))
-                .orElseThrow(
-//                        -> new IllegalArgumentException("존재하지 않는 채팅방입니다.")
-                );
+                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 채팅방입니다."));
 
-        // 2. DTO -> Entity 변환
-        User dummyUser = userRepository.findById(1L)
-                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 유저입니다."));
-        System.out.println("nickname : " + dummyUser.getUserId());
-
+        // 3. Entity 빌드 (더미 유저 삭제!)
         ChatMessage messageEntity = ChatMessage.builder()
                 .chatRoom(room)
-//                .senderId(1L) // 임시 ID (나중에 실제 로그인 유저 ID로 변경)
-                .sender(dummyUser)
+                .sender(sender) // 이제 진짜 유저인 sender를 넣습니다!
                 .content(messageDto.getMessage())
                 .msgType(messageDto.getType())
                 .build();
 
-        // 3. DB 저장
+        // 4. DB 저장
         chatMessageRepository.save(messageEntity);
 
-        // 4. (선택) 채팅방의 마지막 메시지 정보 업데이트
+        // 5. 채팅방의 마지막 메시지 업데이트
         room.updateLastMessage(messageDto.getMessage());
     }
 

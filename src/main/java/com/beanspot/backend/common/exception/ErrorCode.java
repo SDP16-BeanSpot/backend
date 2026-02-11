@@ -17,6 +17,7 @@ public enum ErrorCode {
     AUTH_TOKEN_INVALID(21005, HttpStatus.UNAUTHORIZED, "유효하지 않은 인증 토큰입니다."),
     AUTH_ACCESS_DENIED(21006, HttpStatus.FORBIDDEN, "접근 권한이 없습니다."),
     AUTH_SOCIAL_ID_NOT_FOUND(21007, HttpStatus.UNAUTHORIZED, "해당 소셜아이디로 가입된 정보가 없습니다.."),
+    USER_NOT_FOUND(21008, HttpStatus.NOT_FOUND, "해당 사용자를 찾을 수 없습니다."),
 
     AUTH_USERID_ALREADY_EXISTS(21101, HttpStatus.CONFLICT, "이미 사용 중인 사용자 아이디입니다."),
     AUTH_EMAIL_ALREADY_EXISTS(21102, HttpStatus.CONFLICT, "이미 사용 중인 이메일입니다."),
