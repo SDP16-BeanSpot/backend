@@ -3,6 +3,7 @@ package com.beanspot.backend.controller;
 import com.beanspot.backend.common.response.ApiResponse;
 import com.beanspot.backend.dto.user.UserProfileDTO;
 import com.beanspot.backend.entity.User;
+import com.beanspot.backend.security.CurrentUserId;
 import com.beanspot.backend.service.UserService;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.extern.slf4j.Slf4j;
@@ -20,7 +21,7 @@ public class UserController {
     private UserService userService;
 
     @GetMapping("/me")
-    public ApiResponse<?> getProfile(@com.beanspot.backend.security.CurrentUserId Long userId) {
+    public ApiResponse<?> getProfile(@CurrentUserId Long userId) {
          UserProfileDTO user = userService.getUserProfileById(userId);
          return ApiResponse.ok(user);
     }
