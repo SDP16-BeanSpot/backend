@@ -3,7 +3,7 @@ package com.beanspot.backend.controller;
 import com.beanspot.backend.common.exception.CustomException;
 import com.beanspot.backend.common.exception.ErrorCode;
 import com.beanspot.backend.common.response.ApiResponse;
-import com.beanspot.backend.dto.auth.CheckNicknameResponseDTO;
+import com.beanspot.backend.dto.auth.CheckAvailabilityResponseDTO;
 import com.beanspot.backend.dto.auth.LoginUserDTO;
 import com.beanspot.backend.dto.auth.SignUpSocialUserDTO;
 import com.beanspot.backend.dto.auth.SignUpUserDTO;
@@ -91,11 +91,30 @@ public class AuthController {
         String message = isAvailable ?
                 "사용 가능한 닉네임입니다." :
                 "이미 사용 중인 닉네임입니다.";
-        CheckNicknameResponseDTO responseDTO = CheckNicknameResponseDTO.builder()
+        CheckAvailabilityResponseDTO responseDTO = CheckAvailabilityResponseDTO.builder()
                                                     .available(isAvailable)
-                                                    .nickname(nickname)
+                                                    .value(nickname)
+                                                    .type("nickname")
                                                     .message(message)
                                                     .build();
+        return ApiResponse.ok(responseDTO);
+    }
+
+    @GetMapping("/check-id")
+    public ApiResponse<?> checkId(@RequestParam String userId) {
+        if (userId == null || userId.isBlank()) {
+            throw new CustomException(ErrorCode.INVALID_INPUT_VALUE);
+        }
+        boolean isAvailable = userService.isUserIdAvailable(userId);
+        String message = isAvailable ?
+                "사용 가능한 아이디입니다." :
+                "이미 사용 중인 아이디입니다.";
+        CheckAvailabilityResponseDTO responseDTO = CheckAvailabilityResponseDTO.builder()
+                .available(isAvailable)
+                .value(userId)
+                .type("userId")
+                .message(message)
+                .build();
         return ApiResponse.ok(responseDTO);
     }
 

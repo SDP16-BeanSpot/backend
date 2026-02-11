@@ -1,7 +1,6 @@
 package com.beanspot.backend.dto.auth;
 
-
-import jakarta.validation.constraints.Email;
+import com.beanspot.backend.entity.Role;
 import jakarta.validation.constraints.NotBlank;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -26,6 +25,8 @@ public class SignUpUserDTO {
         private String name;
 
         private String phone;
+
+        private Role role;
     }
 
     @Builder

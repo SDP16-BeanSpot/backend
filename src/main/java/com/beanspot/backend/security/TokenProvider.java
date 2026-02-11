@@ -46,6 +46,8 @@ public class TokenProvider {
 
     public String createAccessToken(User user) {
         Date expiryDate = Date.from(Instant.now().plusSeconds(validityInSeconds));
+
+
         return Jwts.builder()
                 .signWith( SignatureAlgorithm.HS512, secretKey)
                 .setIssuer("beanspot")
@@ -54,6 +56,7 @@ public class TokenProvider {
                 .setSubject(user.getId().toString())
                 .claim("userId", user.getUserId())
                 .claim("name", user.getNickname())
+                .claim("role", user.getRole().name()) // 권한 정보 추가
                 .claim("type", "access")
                 .compact();
     }
@@ -105,6 +108,11 @@ public class TokenProvider {
     public String getSocialTypeFromToken(String token) {
         Claims claims = getAllClaims(token);
         return claims.get("socialType", String.class);
+    }
+
+    public String getRoleFromToken(String token) {
+        Claims claims = getAllClaims(token);
+        return claims.get("role", String.class);
     }
 
     private Claims getAllClaims(String token) {
