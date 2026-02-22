@@ -1,16 +1,22 @@
 package com.beanspot.backend.service.announcement;
 
+import com.beanspot.backend.common.exception.CustomException;
+import com.beanspot.backend.common.exception.ErrorCode;
 import com.beanspot.backend.common.response.PageResponse;
 import com.beanspot.backend.dto.announcement.*;
 import com.beanspot.backend.entity.announcement.*;
 import com.beanspot.backend.listener.AnnouncementCreatedEvent;
 import com.beanspot.backend.repository.announcement.AnnouncementRepository;
+import com.beanspot.backend.repository.announcement.AnnouncementScheduleRepository;
 import com.beanspot.backend.service.KakaoGeoCodingService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.data.elasticsearch.core.geo.GeoPoint;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
+import java.util.List;
+import java.util.stream.IntStream;
 
 @Service
 @RequiredArgsConstructor
@@ -20,7 +26,8 @@ public class AnnouncementServiceImpl implements AnnouncementService {
     private final KakaoGeoCodingService geoCodingService;
 
     private final AnnouncementRepository announcementRepository;
-   private final ApplicationEventPublisher applicationEventPublisher;
+    private final AnnouncementScheduleRepository scheduleRepository;
+    private final ApplicationEventPublisher applicationEventPublisher;
 
     @Override
     @Transactional(readOnly = true)
@@ -34,7 +41,7 @@ public class AnnouncementServiceImpl implements AnnouncementService {
     @Transactional(readOnly = true)
     public AnnouncementDTO.Detail getAnnouncementDetail(Long id) {
         Announcement announcement = announcementRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("No announcement found with id: " + id));
+                .orElseThrow(() -> new CustomException(ErrorCode.ANNOUNCEMENT_NOT_FOUND));
 
         return  AnnouncementDTO.Detail.from(announcement);
 
@@ -44,7 +51,7 @@ public class AnnouncementServiceImpl implements AnnouncementService {
     @Transactional
     public void increaseViewCount(Long id) {
         Announcement announcement = announcementRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("No announcement found with id: " + id));
+                .orElseThrow(() -> new CustomException(ErrorCode.ANNOUNCEMENT_NOT_FOUND));
 
         announcement.setViewCount(announcement.getViewCount() + 1);
     }
@@ -52,27 +59,18 @@ public class AnnouncementServiceImpl implements AnnouncementService {
     @Override
     @Transactional
     public void addAnnouncement(AnnouncementDTO.Create reqDTO) {
-
-        validateType(reqDTO);
-
-
-        Double lat = null;
-        Double lng = null;
-
-        try {
-            GeoPoint geo = geoCodingService.convert(reqDTO.getLocation());
-            lat = geo.getLat();
-            lng = geo.getLon();
-        } catch (Exception e) {
-            throw new IllegalArgumentException("위치 정보를 찾을 수 없습니다.");
-        }
+        GeoPoint geo = geoCodingService.convert(reqDTO.getLocation());
+        Double lat = (geo != null) ? geo.getLat() : null;
+        Double lng = (geo != null) ? geo.getLon() : null;
 
         // 공고 저장
         Announcement announcement = Announcement.builder()
                 .title(reqDTO.getTitle())
-                .content(reqDTO.getContent())
                 .type(reqDTO.getType())
+                .activityContent(reqDTO.getActivityContent())
+                .detailContent(reqDTO.getDetailContent())
                 .organizer(reqDTO.getOrganizer())
+                .organizerImgUrl(reqDTO.getOrganizerImgUrl())
                 .imgUrl(reqDTO.getImgUrl())
                 .region(reqDTO.getRegion())
                 .location(reqDTO.getLocation())
@@ -81,15 +79,33 @@ public class AnnouncementServiceImpl implements AnnouncementService {
                 .recruitmentStart(reqDTO.getRecruitmentStart())
                 .recruitmentEnd(reqDTO.getRecruitmentEnd())
                 .fee(reqDTO.getFee())
-                .scheduleDetail(reqDTO.getScheduleDetail())
                 .lat(lat)
                 .lng(lng)
                 .serviceHoursVerified(reqDTO.getServiceHoursVerified())
                 .selectionProcess(reqDTO.getSelectionProcess())
                 .awardScale(reqDTO.getAwardScale())
+                .activityMethod(reqDTO.getActivityMethod())
+                .applyMethod(reqDTO.getApplyMethod())
+                .benefits(reqDTO.getBenefits())
                 .build();
 
-        announcementRepository.save(announcement);
+        Announcement savedAnnouncement = announcementRepository.save(announcement);
+
+        if (reqDTO.getSchedules() != null) {
+            List<AnnouncementDTO.Create.ScheduleRequestDTO> scheduleDtos = reqDTO.getSchedules();
+            List<AnnouncementSchedule> schedules = IntStream.range(0, scheduleDtos.size())
+                    .mapToObj(i -> {
+                        AnnouncementDTO.Create.ScheduleRequestDTO sDto = scheduleDtos.get(i);
+                        return AnnouncementSchedule.builder()
+                                .announcement(savedAnnouncement)
+                                .scheduleDate(sDto.getScheduleDate())
+                                .content(sDto.getContent())
+                                .sequenceOrder(i + 1) // 리스트의 순서(index)를 그대로 순번으로 사용
+                                .build();
+                    })
+                    .toList();
+            scheduleRepository.saveAll(schedules);
+        }
 
         applicationEventPublisher.publishEvent(
                 new AnnouncementCreatedEvent(announcement.getId())
@@ -100,7 +116,7 @@ public class AnnouncementServiceImpl implements AnnouncementService {
     @Transactional
     public void updateAnnouncement(Long id, AnnouncementDTO.Update reqDTO) {
         Announcement announcement = announcementRepository.findById(id)
-                .orElseThrow(()-> new IllegalArgumentException("공고가 존재하지 않습니다."));
+                .orElseThrow(()-> new CustomException(ErrorCode.ANNOUNCEMENT_NOT_FOUND));
 
         announcement.setTitle(reqDTO.getTitle());
         announcement.setStartDate(reqDTO.getStartDate());
@@ -111,34 +127,9 @@ public class AnnouncementServiceImpl implements AnnouncementService {
     @Transactional
     public void deleteAnnouncement(Long id) {
         if (!announcementRepository.existsById(id)) {
-            throw new IllegalArgumentException("공고가 존재하지 않습니다.");
+            throw new CustomException(ErrorCode.ANNOUNCEMENT_NOT_FOUND);
         }
         announcementRepository.deleteById(id);
     }
 
-
-    private void validateType(AnnouncementDTO.Create reqDTO) {
-        switch (reqDTO.getType()) {
-            case VOLUNTEER -> {
-                if (reqDTO.getServiceHoursVerified() == null) {
-                    throw new IllegalArgumentException("봉사시간 인정 여부는 필수입니다.");
-                }
-            }
-            case SUPPORTER -> {
-                if (reqDTO.getSelectionProcess() == null || reqDTO.getSelectionProcess().isBlank()) {
-                    throw new IllegalArgumentException("서포터즈는 심사 방식이 필요합니다.");
-                }
-            }
-            case CHALLENGE -> {
-                if (reqDTO.getTeamSize() == null || reqDTO.getTeamSize().isBlank()) {
-                    throw new IllegalArgumentException("챌린지는 팀 규모가 필요합니다.");
-                }
-            }
-            case EDUCATION -> {
-                if (reqDTO.getFee() == null) {
-                    throw new IllegalArgumentException("교육 프로그램은 비용 정보가 필요합니다.");
-                }
-            }
-        }
-    }
 }
