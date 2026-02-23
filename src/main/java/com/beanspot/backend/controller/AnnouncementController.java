@@ -60,7 +60,7 @@ public class AnnouncementController {
             @RequestParam(required = false) String keyword,
             @Parameter(
                     description = "공고 유형",
-                    example = "SUPPORT"
+                    example = "SUPPORTER"
             )
             @RequestParam(required = false) AnnouncementType type,
 

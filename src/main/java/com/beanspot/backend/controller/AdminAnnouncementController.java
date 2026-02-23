@@ -11,7 +11,9 @@ import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.Map;
 
@@ -34,9 +36,12 @@ public class AdminAnnouncementController {
             @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "401", description = "인증 필요"),
             @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "403", description = "관리자 권한 없음")
     })
-    @PostMapping()
-    public ApiResponse<String> createAnnouncement(@RequestBody AnnouncementDTO.Create request) {
-        announcementService.addAnnouncement(request);
+    @PostMapping(consumes = {MediaType.MULTIPART_FORM_DATA_VALUE})
+    public ApiResponse<String> createAnnouncement(
+            @RequestPart("request") AnnouncementDTO.Create request,
+            @RequestPart(value = "image", required = false) MultipartFile image
+    ) {
+        announcementService.addAnnouncement(request, image);
         return ApiResponse.ok("공고 등록");
     }
     @ApiResponses({

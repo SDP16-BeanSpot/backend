@@ -6,11 +6,13 @@ import com.beanspot.backend.entity.announcement.*;
 import com.beanspot.backend.listener.AnnouncementCreatedEvent;
 import com.beanspot.backend.repository.announcement.AnnouncementRepository;
 import com.beanspot.backend.service.KakaoGeoCodingService;
+import com.beanspot.backend.service.S3Service;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.data.elasticsearch.core.geo.GeoPoint;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
 
 @Service
 @RequiredArgsConstructor
@@ -21,6 +23,7 @@ public class AnnouncementServiceImpl implements AnnouncementService {
 
     private final AnnouncementRepository announcementRepository;
    private final ApplicationEventPublisher applicationEventPublisher;
+    private final S3Service s3Service;
 
     @Override
     @Transactional(readOnly = true)
@@ -51,14 +54,21 @@ public class AnnouncementServiceImpl implements AnnouncementService {
 
     @Override
     @Transactional
-    public void addAnnouncement(AnnouncementDTO.Create reqDTO) {
+    public void addAnnouncement(AnnouncementDTO.Create reqDTO, MultipartFile image) {
 
         validateType(reqDTO);
 
+        String uploadedImgUrl = null;
 
+        if(image != null && !image.isEmpty()) {
+            uploadedImgUrl = s3Service.uploadFile(image);
+        }else{
+            uploadedImgUrl = s3Service.uploadFromUrl(reqDTO.getImgUrl());
+        }
+
+        // 주소 -> 위경도 변환 로직
         Double lat = null;
         Double lng = null;
-
         try {
             GeoPoint geo = geoCodingService.convert(reqDTO.getLocation());
             lat = geo.getLat();
@@ -73,7 +83,7 @@ public class AnnouncementServiceImpl implements AnnouncementService {
                 .content(reqDTO.getContent())
                 .type(reqDTO.getType())
                 .organizer(reqDTO.getOrganizer())
-                .imgUrl(reqDTO.getImgUrl())
+                .imgUrl(uploadedImgUrl)
                 .region(reqDTO.getRegion())
                 .location(reqDTO.getLocation())
                 .startDate(reqDTO.getStartDate())
