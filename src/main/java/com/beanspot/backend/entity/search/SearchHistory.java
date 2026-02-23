@@ -31,4 +31,7 @@ public class SearchHistory extends BaseEntity {
         return h;
     }
 
+    public void touch() {
+        super.touch();
+    }
 }

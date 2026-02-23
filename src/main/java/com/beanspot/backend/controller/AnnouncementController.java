@@ -22,7 +22,6 @@ import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.*;
 
-import java.text.Normalizer;
 import java.time.YearMonth;
 import java.util.List;
 
@@ -55,15 +54,8 @@ public class AnnouncementController {
 
             @Parameter(description = "검색 키워드",example = "플로깅")
             @RequestParam(required = false) String keyword,
-<<<<<<< feature/#24-update-announcement-entity
 
             @Parameter(description = "공고 유형", example = "SUPPORTER")
-=======
-            @Parameter(
-                    description = "공고 유형",
-                    example = "SUPPORTER"
-            )
->>>>>>> develop
             @RequestParam(required = false) AnnouncementType type,
 
             @RequestParam(required = false) List<String> hashtags,
