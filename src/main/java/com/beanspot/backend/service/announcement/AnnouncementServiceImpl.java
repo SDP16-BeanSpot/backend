@@ -9,11 +9,13 @@ import com.beanspot.backend.listener.AnnouncementCreatedEvent;
 import com.beanspot.backend.repository.announcement.AnnouncementRepository;
 import com.beanspot.backend.repository.announcement.AnnouncementScheduleRepository;
 import com.beanspot.backend.service.KakaoGeoCodingService;
+import com.beanspot.backend.service.S3Service;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.data.elasticsearch.core.geo.GeoPoint;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 import java.util.stream.IntStream;
@@ -28,6 +30,7 @@ public class AnnouncementServiceImpl implements AnnouncementService {
     private final AnnouncementRepository announcementRepository;
     private final AnnouncementScheduleRepository scheduleRepository;
     private final ApplicationEventPublisher applicationEventPublisher;
+    private final S3Service s3Service;
 
     @Override
     @Transactional(readOnly = true)
@@ -58,7 +61,16 @@ public class AnnouncementServiceImpl implements AnnouncementService {
 
     @Override
     @Transactional
-    public void addAnnouncement(AnnouncementDTO.Create reqDTO) {
+    public void addAnnouncement(AnnouncementDTO.Create reqDTO, MultipartFile image) {
+
+        String uploadedImgUrl = null;
+
+        if(image != null && !image.isEmpty()) {
+            uploadedImgUrl = s3Service.uploadFile(image);
+        }else{
+            uploadedImgUrl = s3Service.uploadFromUrl(reqDTO.getImgUrl());
+        }
+
         GeoPoint geo = geoCodingService.convert(reqDTO.getLocation());
         Double lat = (geo != null) ? geo.getLat() : null;
         Double lng = (geo != null) ? geo.getLon() : null;
@@ -71,7 +83,7 @@ public class AnnouncementServiceImpl implements AnnouncementService {
                 .detailContent(reqDTO.getDetailContent())
                 .organizer(reqDTO.getOrganizer())
                 .organizerImgUrl(reqDTO.getOrganizerImgUrl())
-                .imgUrl(reqDTO.getImgUrl())
+                .imgUrl(uploadedImgUrl)
                 .region(reqDTO.getRegion())
                 .location(reqDTO.getLocation())
                 .startDate(reqDTO.getStartDate())
