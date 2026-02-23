@@ -14,14 +14,13 @@
       }
     }
   },
-  "content": {
-    "type": "text",
-    "analyzer": "korean"
-  },
   "type": {
     "type": "keyword"
   },
   "region": {
+    "type": "keyword"
+  },
+  "activityMethod": {
     "type": "keyword"
   },
   "recruitmentStart": {

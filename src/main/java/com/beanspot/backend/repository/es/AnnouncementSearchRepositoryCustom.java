@@ -14,6 +14,7 @@ public interface AnnouncementSearchRepositoryCustom {
             String keyword,
             AnnouncementType type,
             String region,
+            String activityMethod,
             YearMonth recruitmentMonth,
             YearMonth activityMonth,
             Double minLat,

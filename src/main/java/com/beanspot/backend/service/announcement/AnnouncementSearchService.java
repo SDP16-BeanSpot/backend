@@ -5,6 +5,7 @@ import com.beanspot.backend.dto.announcement.AnnouncementSearchConditionDTO;
 import com.beanspot.backend.dto.announcement.AnnouncementSummaryDTO;
 import com.beanspot.backend.entity.announcement.AnnouncementDocument;
 import com.beanspot.backend.entity.announcement.Announcement;
+import com.beanspot.backend.entity.search.SortType;
 import com.beanspot.backend.repository.announcement.AnnouncementRdbSearchRepository;
 import com.beanspot.backend.repository.es.AnnouncementSearchRepository;
 import lombok.RequiredArgsConstructor;
@@ -32,7 +33,7 @@ public class AnnouncementSearchService {
             AnnouncementSearchConditionDTO condition
     ){
         log.info("[AnnouncementSearch] search start - condition={}", condition);
-        // 홈 화면 (limit)
+        // 홈 화면 (limit) (RDB)
         if (condition.getLimit() != null) {
             log.info("[AnnouncementSearch][RDB] limit search 시작 (limit={})", condition.getLimit());
 
@@ -54,7 +55,7 @@ public class AnnouncementSearchService {
         Pageable pageable = PageRequest.of(
                 condition.getPage(),
                 condition.getSize(),
-                resolveSort(condition.getSort().name())
+                resolveSort(condition.getSort())
         );
         // ES 검색
         try{
@@ -66,6 +67,7 @@ public class AnnouncementSearchService {
                             condition.getKeyword(),
                             condition.getType(),
                             condition.getRegion(),
+                            condition.getActivityMethod(),
                             condition.getRecruitmentMonth(),
                             condition.getActivityMonth(),
                             condition.getMinLat(),
@@ -112,14 +114,13 @@ public class AnnouncementSearchService {
         return PageResponse.of(pageResult, dtos);
     }
 
-    private Sort resolveSort(String sort) {
-        if("popular".equals(sort)) {
-            return Sort.by(Sort.Direction.DESC,"viewCount");
-        }
-        if("endDate".equals(sort)) {
-            return Sort.by(Sort.Direction.ASC,"endDate");
-        }
-        return Sort.by(Sort.Direction.DESC, "createdAt");
+    private Sort resolveSort(SortType sortType) {
+
+        return switch (sortType) {
+            case POPULAR -> Sort.by(Sort.Direction.DESC, "viewCount");
+            case LATEST -> Sort.by(Sort.Direction.DESC, "createdAt");
+            default -> Sort.unsorted(); // Repository에서 직접 처리
+        };
     }
 
 }

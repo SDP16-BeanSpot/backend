@@ -18,6 +18,7 @@ public class AnnouncementSearchConditionDTO {
     private AnnouncementType type;
     private List<String> hashtags;
     private String region;
+    private String activityMethod;
     private boolean onlyRecruiting;
 
     // 기간
