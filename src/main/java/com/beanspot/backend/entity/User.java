@@ -15,7 +15,7 @@ public class User extends BaseEntity { // BaseEntity 상속으로 생성/수정 
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(name = "user_id")
+    @Column(name = "user_id", nullable = false, unique = true)
     private String userId; // 사용자 로그인 아이디
 
     @Column(name = "password", length = 100)
@@ -27,7 +27,7 @@ public class User extends BaseEntity { // BaseEntity 상속으로 생성/수정 
     private String nickname; // 서비스 활동 닉네임
 
     @Enumerated(EnumType.STRING)
-    @Column(name = "social_type")
+    @Column(name = "social_type", nullable = false)
     private SocialType socialType; // KAKAO, NAVER 등
 
     @Column(name = "social_id", unique = true)
@@ -45,7 +45,9 @@ public class User extends BaseEntity { // BaseEntity 상속으로 생성/수정 
     @Column(name = "refresh_token")
     private String refreshToken; // JWT 갱신용 토큰
 
-    private boolean emailVerified; // 이메일 인증 여부
+    @Builder.Default
+    @Column(nullable = false)
+    private boolean emailVerified = false; // 이메일 인증 여부
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)

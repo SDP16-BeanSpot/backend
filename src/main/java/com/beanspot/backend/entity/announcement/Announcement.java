@@ -20,13 +20,16 @@ public class Announcement extends BaseEntity {
     private Long id;
 
     @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
     private AnnouncementType type;  //공고 유형
 
+    @Column(nullable = false)
     private String title;           //공고 제목
 
     @Column(name = "img_url")
     private String imgUrl;      //공고 포스터
 
+    @Column(nullable = false)
     private String organizer;       //운영 주체
 
     @Column(name = "organizer_img_url")
@@ -39,6 +42,7 @@ public class Announcement extends BaseEntity {
 
     private String recruitmentCount; // 모집 인원
 
+    @Column(nullable = false)
     private String applyMethod;      // 접수 방법 (온라인 접수/ 이메일 접수)
 
     @Column(name = "link_url")
@@ -47,12 +51,13 @@ public class Announcement extends BaseEntity {
     @Column(nullable = false)
     private String location;        //활동 장소
 
-    @Column(name = "start_date")
+    @Column(name = "start_date", nullable = false)
     private LocalDate startDate;    //활동 시작일
 
-    @Column(name = "end_date")
+    @Column(name = "end_date", nullable = false)
     private LocalDate endDate;      //활동 종료일
 
+    @Column(nullable = false)
     private String activityMethod;   // 활동 방식 (온/오프라인)
 
 
@@ -60,10 +65,10 @@ public class Announcement extends BaseEntity {
     @OrderBy("sequenceOrder ASC")
     private List<AnnouncementSchedule> schedules = new ArrayList<>();
 
-    @Column(name = "recruitment_start")
+    @Column(name = "recruitment_start", nullable = false)
     private LocalDate recruitmentStart;    //접수 시작일
 
-    @Column(name = "recruitment_end")
+    @Column(name = "recruitment_end", nullable = false)
     private LocalDate recruitmentEnd;       //접수 마감일
 
     private Integer fee;            //참가비 or 비용
@@ -88,9 +93,9 @@ public class Announcement extends BaseEntity {
     @Column(name = "team_size")
     private String teamSize;        //팀원 규모
 
-
-    @Column(name = "view_count")
-    private int viewCount;      //조회수
+    @Builder.Default
+    @Column(name = "view_count", nullable = false)
+    private int viewCount = 0;      //조회수
 
     //지도용 위경도
     private Double lat;
