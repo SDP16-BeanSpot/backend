@@ -38,6 +38,9 @@ public class ChatMessage {
 
     private LocalDateTime createdAt = LocalDateTime.now();
 
+    @Column(name = "reaction_count")
+    private int reactionCount = 0;
+
     // 빌더 패턴 추가 -> Service에서 필요
     @Builder
     public ChatMessage(ChatRoom chatRoom, User sender, String content, ChatMessageType msgType) {

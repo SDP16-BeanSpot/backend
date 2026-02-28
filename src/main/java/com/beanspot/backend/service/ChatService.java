@@ -10,6 +10,9 @@ import com.beanspot.backend.repository.ChatMessageRepository;
 import com.beanspot.backend.repository.ChatRoomRepository;
 import com.beanspot.backend.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Slice;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -70,4 +73,9 @@ public class ChatService {
                 .collect(Collectors.toList());
     }
 
+    public Slice<ChatMessage> getChatMessages(Long roomId, int page, int size) {
+        // 최신순으로 정렬해서 요청한 페이지만큼 가져오기
+        Pageable pageable = PageRequest.of(page, size);
+        return chatMessageRepository.findByChatRoomIdOrderByCreatedAtDesc(roomId, pageable);
+    }
 }
