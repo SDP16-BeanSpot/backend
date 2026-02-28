@@ -27,13 +27,12 @@ public class WebSecurityConfig {
         http
                 .cors(Customizer.withDefaults())
                 .httpBasic(AbstractHttpConfigurer::disable)
-                .authorizeHttpRequests((auth) -> auth
+                .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/api/admin/**").hasRole("ADMIN")
                         .requestMatchers("/",
                                 "/api/auth/**",
                                 "/swagger-ui/**",
                                 "/v3/api-docs/**",
-                                "/webjars/**").permitAll()
                                 "/webjars/**",
                                 "/docs/**").permitAll()
                         // 웹소켓 엔드포인트에 대한 접근 허용
