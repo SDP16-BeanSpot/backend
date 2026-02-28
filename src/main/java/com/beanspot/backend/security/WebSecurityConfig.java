@@ -29,7 +29,6 @@ public class WebSecurityConfig {
                 .httpBasic(AbstractHttpConfigurer::disable)
                 .authorizeHttpRequests((auth) -> auth
                         .requestMatchers("/",
-                                "/ws-stomp/**", "/index.html", "/static/**", "/api/chat/**", "/ws/**",
                                 "/api/auth/**",
                                 "/swagger-ui/**",
                                 "/v3/api-docs/**",
