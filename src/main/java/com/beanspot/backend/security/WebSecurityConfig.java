@@ -35,10 +35,9 @@ public class WebSecurityConfig {
                                 "/v3/api-docs/**",
                                 "/webjars/**").permitAll()
                         .anyRequest().authenticated()
-
-                ).exceptionHandling(exception -> exception
+                )
+                .exceptionHandling(exception -> exception
                         .authenticationEntryPoint(new Http403ForbiddenEntryPoint()));
-
 
         return http.build();
     }
