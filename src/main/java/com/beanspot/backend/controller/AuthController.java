@@ -43,7 +43,7 @@ public class AuthController {
     public ApiResponse<?> signup(@RequestBody SignUpUserDTO.Req userDTO) {
 
         if (userDTO == null || userDTO.getPassword() == null) {
-            throw new RuntimeException("Invalid password value.");
+            throw new CustomException(ErrorCode.INVALID_INPUT_VALUE);
         }
         SignUpUserDTO.Res responseUserDTO = userService.createUser(userDTO);
         return ApiResponse.ok(responseUserDTO);

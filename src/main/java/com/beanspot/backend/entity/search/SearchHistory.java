@@ -1,11 +1,11 @@
 package com.beanspot.backend.entity.search;
 
+import com.beanspot.backend.entity.BaseEntity;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
-import java.time.LocalDateTime;
 
 @Entity
 @Table(name = "search_history",
@@ -13,7 +13,7 @@ import java.time.LocalDateTime;
         indexes = {@Index(name = "idx_user_updated", columnList = "user_id, updated_at")})
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-public class SearchHistory {
+public class SearchHistory extends BaseEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
@@ -24,23 +24,14 @@ public class SearchHistory {
     @Column(nullable = false, length = 100)
     private String keyword;
 
-    @Column(nullable = false)
-    private LocalDateTime createdAt;
-
-    @Column(nullable = false)
-    private LocalDateTime updatedAt;
-
     public static SearchHistory create(Long userId, String keyword) {
-        LocalDateTime now = LocalDateTime.now();
         SearchHistory h = new SearchHistory();
         h.userId = userId;
         h.keyword = keyword;
-        h.createdAt = now;
-        h.updatedAt = now;
         return h;
     }
 
     public void touch() {
-        this.updatedAt = LocalDateTime.now();
+        super.touch();
     }
 }

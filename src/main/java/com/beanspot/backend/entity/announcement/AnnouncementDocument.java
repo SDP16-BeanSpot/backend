@@ -25,17 +25,15 @@ public class AnnouncementDocument {
     @Field(type = FieldType.Text)
     private String title;
 
-    //추후 트래픽 많아지면 제거
-    @Field(type = FieldType.Text)
-    private String content;
-
     //필터
-
     @Field(type = FieldType.Keyword)
     private String type;
 
     @Field(type = FieldType.Keyword)
     private String region;
+
+    @Field(type = FieldType.Keyword)
+    private String activityMethod;
 
     // 모집/활동 기간
 
@@ -52,13 +50,13 @@ public class AnnouncementDocument {
     @Field(type = FieldType.Date)
     private LocalDate endDate;
 
-    //지도
+    //지도 (Geo-Distance 쿼리용)
     @GeoPointField
     private GeoPoint geoLocation;
 
     // 리스트 표시용
 
-    @Field(type = FieldType.Keyword)
+    @Field(type = FieldType.Keyword, index = false)
     private String thumbnailUrl;
 
     //정렬
@@ -83,9 +81,9 @@ public class AnnouncementDocument {
         return  AnnouncementDocument.builder()
                 .id(announcement.getId())
                 .title(announcement.getTitle())
-                .content(announcement.getContent())
                 .type(announcement.getType().name())
                 .region(announcement.getRegion())
+                .activityMethod(announcement.getActivityMethod())
                 .recruitmentStart(announcement.getRecruitmentStart())
                 .recruitmentEnd(announcement.getRecruitmentEnd())
                 .startDate(announcement.getStartDate())

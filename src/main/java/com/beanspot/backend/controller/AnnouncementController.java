@@ -22,7 +22,6 @@ import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.*;
 
-import java.text.Normalizer;
 import java.time.YearMonth;
 import java.util.List;
 
@@ -52,35 +51,25 @@ public class AnnouncementController {
     public PageResponse<AnnouncementSummaryDTO> getAnnouncements(
             @Parameter(hidden = true)
             @CurrentUserId Long userId,
-            @Parameter(
-                    description = "검색 키워드",
-                    example = "플로깅"
-            )
 
+            @Parameter(description = "검색 키워드",example = "플로깅")
             @RequestParam(required = false) String keyword,
-            @Parameter(
-                    description = "공고 유형",
-                    example = "SUPPORT"
-            )
+
+            @Parameter(description = "공고 유형", example = "SUPPORTER")
             @RequestParam(required = false) AnnouncementType type,
 
             @RequestParam(required = false) List<String> hashtags,
 
-            @Parameter(
-                    description = "지역",
-                    example = "강남구"
-            )
+            @Parameter(description = "행정구", example = "강남구")
             @RequestParam(required = false) String region,
-            @Parameter(
-                    description = "모집 기간 (yyyy-MM)",
-                    example = "2026-03"
-            )
+
+            @Parameter(description = "활동 방식 (온라인 / 오프라인)", example = "오프라인")
+            @RequestParam(required = false) String activityMethod,
+
+            @Parameter(description = "모집 기간 (yyyy-MM)", example = "2026-03")
             @RequestParam(required = false) @DateTimeFormat(pattern = "yyyy-MM") YearMonth recruitmentMonth,
 
-            @Parameter(
-                    description = "활동 기간 (yyyy-MM)",
-                    example = "2026-04"
-            )
+            @Parameter(description = "활동 기간 (yyyy-MM)", example = "2026-04")
             @RequestParam(required = false) @DateTimeFormat(pattern = "yyyy-MM") YearMonth activityMonth,
 
             @Parameter(description = "최소 위도", example = "37.4")
@@ -109,6 +98,7 @@ public class AnnouncementController {
                 .type(type)
                 .hashtags(hashtags)
                 .region(region)
+                .activityMethod(activityMethod)
                 .recruitmentMonth(recruitmentMonth)
                 .activityMonth(activityMonth)
                 .minLat(minLat)
@@ -120,6 +110,7 @@ public class AnnouncementController {
                 .page(page)
                 .size(size)
                 .build();
+
         //최근 검색어 저장
         String normalizedKeyword = keyword == null ? null : keyword.trim();
         if(userId != null && StringUtils.hasText(normalizedKeyword)) {

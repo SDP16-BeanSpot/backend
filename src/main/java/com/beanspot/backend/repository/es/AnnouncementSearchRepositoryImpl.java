@@ -1,5 +1,6 @@
 package com.beanspot.backend.repository.es;
 
+import co.elastic.clients.elasticsearch._types.SortOrder;
 import co.elastic.clients.elasticsearch._types.TopLeftBottomRightGeoBounds;
 import co.elastic.clients.elasticsearch._types.query_dsl.BoolQuery;
 import co.elastic.clients.elasticsearch._types.query_dsl.GeoBoundingBoxQuery;
@@ -32,6 +33,7 @@ public class AnnouncementSearchRepositoryImpl implements AnnouncementSearchRepos
             String keyword,
             AnnouncementType type,
             String region,
+            String activityMethod,
             YearMonth recruitmentMonth,
             YearMonth activityMonth,
             Double minLat,
@@ -48,9 +50,15 @@ public class AnnouncementSearchRepositoryImpl implements AnnouncementSearchRepos
         if(keyword != null && !keyword.isBlank()) {
             bool.must(m -> m.multiMatch(mm -> mm
                     .query(keyword)
-                    .fields("title", "content")
+                    .fields("title")
             ));
         }
+
+        // 활동 방식 필터
+        if(activityMethod != null && !activityMethod.isBlank()) {
+            bool.filter(f -> f.term(t -> t.field("activityMethod").value(activityMethod)));
+        }
+
         // 공고 유형 필터
         if(type != null ) {
             bool.filter(f -> f.term(t -> t.field("type").value(type.name())));
@@ -141,14 +149,28 @@ public class AnnouncementSearchRepositoryImpl implements AnnouncementSearchRepos
                 .withPageable(pageable);
 
         if(sort == SortType.DISTANCE && minLat != null && minLng != null){
+            //거리순 정렬
+            double centerLat = (minLat + maxLat) / 2;
+            double centerLng = (minLng + maxLng) / 2;
+
             builder.withSort(s -> s.geoDistance(g -> g
                             .field("geoLocation")
                             .location(l -> l.latlon(ll -> ll
-                                    .lat(minLat)
-                                    .lon(minLng)
+                                    .lat(centerLat)
+                                    .lon(centerLng)
                             ))
                             .order(co.elastic.clients.elasticsearch._types.SortOrder.Asc)
                     ));
+        } else if (sort == SortType.POPULAR) {
+            //조회수순 정렬
+            builder.withSort(s -> s.field(f -> f.field("viewCount").order(SortOrder.Desc)));
+        }else if (sort == SortType.RECOMMENDED) {
+            // 추천순: 마감 임박순 + 최신순
+            builder.withSort(s -> s.field(f -> f.field("endDate").order(SortOrder.Asc)));
+            builder.withSort(s -> s.field(f -> f.field("createdAt").order(SortOrder.Desc)));
+        }else {
+            // 기본 최신순
+            builder.withSort(s -> s.field(f -> f.field("createdAt").order(SortOrder.Desc)));
         }
 
         NativeQuery query = builder.build();
@@ -187,4 +209,5 @@ public class AnnouncementSearchRepositoryImpl implements AnnouncementSearchRepos
                 .distinct()
                 .toList();
     }
+
 }

@@ -26,4 +26,8 @@ public abstract class BaseEntity {
 
     @LastModifiedDate
     private LocalDateTime updatedAt;
+
+    public void touch() {
+        this.updatedAt = LocalDateTime.now();
+    }
 }

@@ -83,8 +83,7 @@ public class AnnouncementRdbSearchRepositoryImpl implements AnnouncementRdbSearc
 
     private BooleanExpression containsKeyword(String keyword) {
         if(keyword == null || keyword.isEmpty()) return null;
-        return a.title.containsIgnoreCase(keyword)
-                .or(a.content.containsIgnoreCase(keyword));
+        return a.title.containsIgnoreCase(keyword);
     }
 
     private BooleanExpression eqType(AnnouncementType type) {

@@ -6,6 +6,7 @@ import org.springframework.http.HttpStatus;
 public enum ErrorCode {
     // ==================== Common (10xxx) ====================
     INVALID_INPUT_VALUE(10001, HttpStatus.BAD_REQUEST, "입력값이 올바르지 않습니다."),
+    INVALID_LOCATION_FORMAT(10002, HttpStatus.BAD_REQUEST, "위치 정보가 올바르지 않습니다."),
 
     CALENDAR_SCHEDULE_NOT_FOUND(11001, HttpStatus.NOT_FOUND, "일정을 찾을 수 없습니다."),
     CALENDAR_INVALID_REPEAT_RULE(11002, HttpStatus.BAD_REQUEST, "유효하지 않은 반복 주기입니다."),
@@ -35,6 +36,9 @@ public enum ErrorCode {
 
     INTERNAL_SERVER_ERROR(90000, HttpStatus.INTERNAL_SERVER_ERROR, "서버 오류가 발생했습니다."),
 
+
+    // ==================== ANNOUNCEMENT (31xxx) ====================
+    ANNOUNCEMENT_NOT_FOUND(31001, HttpStatus.NOT_FOUND, "해당 공고를 찾을 수 없습니다."),
     ;
 
 
