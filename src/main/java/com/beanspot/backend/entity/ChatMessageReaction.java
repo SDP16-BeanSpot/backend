@@ -30,4 +30,5 @@ public class ChatMessageReaction {
         this.userId = userId;
         this.reactionType = reactionType;
     }
+
 }

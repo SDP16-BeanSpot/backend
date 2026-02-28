@@ -5,9 +5,13 @@ import io.jsonwebtoken.*;
 import jakarta.annotation.PostConstruct;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.stereotype.Component;
 
 import java.time.Instant;
+import java.util.Collections;
 import java.util.Date;
 
 @Slf4j
@@ -42,6 +46,8 @@ public class TokenProvider {
 
     public String createAccessToken(User user) {
         Date expiryDate = Date.from(Instant.now().plusSeconds(validityInSeconds));
+
+
         return Jwts.builder()
                 .signWith( SignatureAlgorithm.HS512, secretKey)
                 .setIssuer("beanspot")
@@ -50,6 +56,7 @@ public class TokenProvider {
                 .setSubject(user.getId().toString())
                 .claim("userId", user.getUserId())
                 .claim("name", user.getNickname())
+                .claim("role", user.getRole().name()) // 권한 정보 추가
                 .claim("type", "access")
                 .compact();
     }
@@ -103,6 +110,11 @@ public class TokenProvider {
         return claims.get("socialType", String.class);
     }
 
+    public String getRoleFromToken(String token) {
+        Claims claims = getAllClaims(token);
+        return claims.get("role", String.class);
+    }
+
     private Claims getAllClaims(String token) {
         return parser.parseClaimsJws(token).getBody();
     }
@@ -121,6 +133,21 @@ public class TokenProvider {
             log.info("JWT 토큰 없거나 잘못되었습니다.");
         }
         return false;
+    }
+
+    /**
+     * 채팅 : JWT 토큰 정보를 기반으로 Spring Security 인증 객체 생성
+     * StompHandler에서 웹소켓 연결 시 유저를 식별하기 위해 필요
+     * @param token 검증이 완료된 JWT AccessToken
+     * @return Spring Security에서 사용하는 유저 인증 객체 (Authentication)
+     */
+    public Authentication getAuthentication(String token) {
+        Claims claims = getAllClaims(token);
+        String principal = claims.getSubject();
+
+        SimpleGrantedAuthority authority = new SimpleGrantedAuthority("ROLE_USER");
+
+        return new UsernamePasswordAuthenticationToken(principal, token, Collections.singleton(authority));
     }
 
 }

@@ -31,4 +31,5 @@ public class ChatParticipant {
     private Long lastReadMsgId;
 
     private Boolean isPinned = false;
+
 }

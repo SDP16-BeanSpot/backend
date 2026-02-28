@@ -49,4 +49,5 @@ public class ChatMessage {
         this.content = content;
         this.msgType = msgType;
     }
+
 }

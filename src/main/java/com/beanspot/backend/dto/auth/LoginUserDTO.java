@@ -26,6 +26,7 @@ public class LoginUserDTO {
         private String refreshToken;
         private Long id;
         private String nickname;
+        private String role;
         private Boolean isProfileComplete;
     }
 }
