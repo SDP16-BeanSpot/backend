@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>채팅 테스트</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/sockjs-client/1.5.1/sockjs.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/stomp.js/2.3.3/stomp.min.js"></script>
+</head>
+<body>
+<div>
+    <input type="text" id="sender" placeholder="내 이름">
+    <input type="text" id="message" placeholder="메시지 입력">
+    <button onclick="sendMessage()">전송</button>
+</div>
+<div id="chat-content"></div>
+
+<script>
+    var sock = new SockJS('/ws-stomp');
+    var ws = Stomp.over(sock);
+
+    ws.connect({}, function(frame) {
+        console.log("연결 성공!");
+        // 여기서 구독(Subscribe)을 자동으로 수행합니다.
+        ws.subscribe("/sub/chat/room/1", function(message) {
+            var recv = JSON.parse(message.body);
+            var div = document.createElement('div');
+            div.innerHTML = "<b>" + recv.sender + ":</b> " + recv.message;
+            document.getElementById('chat-content').appendChild(div);
+        });
+    });
+
+    function sendMessage() {
+        var sender = document.getElementById('sender').value;
+        var content = document.getElementById('message').value;
+        // 여기서 발행(Publish)을 수행합니다.
+        ws.send("/pub/chat/message", {}, JSON.stringify({
+            type: 'TALK', roomId: '1', sender: sender, message: content
+        }));
+    }
+</script>
+</body>
+</html>
