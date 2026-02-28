@@ -1,5 +1,8 @@
 package com.beanspot.backend.entity;
 
+import com.beanspot.backend.common.exception.CustomException;
+import com.beanspot.backend.common.exception.ErrorCode;
+
 public enum SocialType {
     KAKAO,
     NAVER,
@@ -10,7 +13,7 @@ public enum SocialType {
         try{
             return SocialType.valueOf(input.toUpperCase());
         }catch (IllegalArgumentException e){
-            throw new IllegalArgumentException("Invalid social type: " + input);
+            throw new CustomException(ErrorCode.INVALID_INPUT_VALUE);
         }
     }
 }

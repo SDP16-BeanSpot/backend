@@ -5,4 +5,5 @@ public enum ChatMessageType {
     NOTICE, // 공지사항
     ENTER,  // 입장
     QUIT    // 퇴장
+
 }
