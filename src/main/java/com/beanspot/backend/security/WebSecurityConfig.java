@@ -27,7 +27,7 @@ public class WebSecurityConfig {
         http
                 .cors(Customizer.withDefaults())
                 .httpBasic(AbstractHttpConfigurer::disable)
-                .authorizeHttpRequests((auth) -> auth
+                .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/",
                                 "/api/auth/**",
                                 "/swagger-ui/**",
