@@ -1,0 +1,66 @@
+name: Deploy To EC2
+on:
+  push:
+    branches:
+      - develop
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Github Repository 파일 불러오기
+        uses: actions/checkout@v4
+
+      - name: Set up JDK
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 17
+
+      - name: gradlew 실행 권한 부여
+        run: chmod +x ./gradlew
+
+      - name: 테스트 및 빌드
+        run: ./gradlew clean build -x test
+
+      - name: AWS credentials 설정
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-region: ap-northeast-2
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+
+      - name: ECR에 로그인
+        id: login-ecr
+        uses: aws-actions/amazon-ecr-login@v2
+
+      - name: Docker 이미지 생성
+        run: docker build -t beanspot-app -f docker/app/Dockerfile .
+
+      - name: Docker 이미지 태그 작성
+        run: docker tag beanspot-app ${{ steps.login-ecr.outputs.registry }}/beanspot-app:latest
+
+      - name: ECR에 Docker 이미지 push
+        run: docker push ${{ steps.login-ecr.outputs.registry }}/beanspot-app:latest
+
+      - name: SSH로 EC2 접속
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.EC2_HOST }}
+          username: ${{ secrets.EC2_USERNAME }}
+          key: ${{ secrets.EC2_PRIVATE_KEY }}
+          script: |
+            # 1. EC2 서버에서 ECR 로그인
+            aws ecr get-login-password --region ap-northeast-2 | docker login --username AWS --password-stdin 258143933136.dkr.ecr.ap-northeast-2.amazonaws.com
+            
+            # 2. 프로젝트 경로 이동
+            cd /home/ubuntu/beanspot
+            
+            # 3. 최신 이미지 Pull
+            docker pull ${{ steps.login-ecr.outputs.registry }}/beanspot-app:latest
+            
+            # 4. 기존 컨테이너 중지 및 삭제
+            docker rm -f beanspot-app || true
+            
+            # 5. 새 컨테이너 실행
+            docker compose up -d app
