@@ -6,6 +6,7 @@ import com.beanspot.backend.dto.announcement.AnnouncementSummaryDTO;
 import com.beanspot.backend.entity.announcement.AnnouncementDocument;
 import com.beanspot.backend.entity.announcement.Announcement;
 import com.beanspot.backend.entity.search.SortType;
+import com.beanspot.backend.repository.BookmarkRepository;
 import com.beanspot.backend.repository.announcement.AnnouncementRdbSearchRepository;
 import com.beanspot.backend.repository.es.AnnouncementSearchRepository;
 import lombok.RequiredArgsConstructor;
@@ -17,7 +18,9 @@ import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 @Slf4j
 @Service
@@ -27,9 +30,11 @@ public class AnnouncementSearchService {
 
     private final AnnouncementSearchRepository esRepository;
     private final AnnouncementRdbSearchRepository rdbRepository;
+    private final BookmarkRepository bookmarkRepository;
 
     // 공고 목록 검색 (사용자 / 홈 / 검색 페이지)
     public PageResponse<AnnouncementSummaryDTO> search(
+            Long userId,
             AnnouncementSearchConditionDTO condition
     ){
         log.info("[AnnouncementSearch] search start - condition={}", condition);
@@ -44,9 +49,13 @@ public class AnnouncementSearchService {
                     condition.getSort().name(),
                     condition.getLimit()
             );
+
+            List<Long> ids = list.stream().map(Announcement::getId).toList();
+            var bookmarkedIds = loadBookmarkedIds(userId, ids);
+
             log.info("[AnnouncementSearch][RDB] limit search 완료 - resultSize={}", list.size());
             List<AnnouncementSummaryDTO> dtos = list.stream()
-                    .map(AnnouncementSummaryDTO::from)
+                    .map(a -> AnnouncementSummaryDTO.from(a, bookmarkedIds.contains(a.getId())))
                     .toList();
 
             return PageResponse.of(dtos);
@@ -82,21 +91,33 @@ public class AnnouncementSearchService {
                     esResult.getTotalElements(),
                     esResult.getNumberOfElements());
 
+            List<Long> announcementIds = esResult.getContent()
+                    .stream()
+                    .map(AnnouncementDocument::getId)
+                    .toList();
+
+            Set<Long> bookmarkedIds = loadBookmarkedIds(userId, announcementIds);
+
             List<AnnouncementSummaryDTO> dtos = esResult.getContent()
                     .stream()
-                    .map(AnnouncementSummaryDTO::from)
+                    .map(doc -> AnnouncementSummaryDTO.from(
+                            doc,
+                            bookmarkedIds.contains(doc.getId())
+                    ))
                     .toList();
 
             return PageResponse.of(esResult, dtos);
         }catch (Exception e) {
             // ES 장애 시 fallback
             log.error("[AnnouncementSearch][ES] search 실패 → RDB fallback", e);
-            return searchFromRdbFallback(condition, pageable);
+            return searchFromRdbFallback(userId, condition, pageable);
         }
     }
 
     private PageResponse<AnnouncementSummaryDTO> searchFromRdbFallback(
-            AnnouncementSearchConditionDTO condition, Pageable pageable
+            Long userId,
+            AnnouncementSearchConditionDTO condition,
+            Pageable pageable
     ){
         log.info("[AnnouncementSearch][RDB-FALLBACK] search");
         Page<Announcement> pageResult = rdbRepository.search(condition.getKeyword(),
@@ -106,12 +127,26 @@ public class AnnouncementSearchService {
                 pageable
         );
 
+        List<Long> ids = pageResult.getContent().stream()
+                .map(Announcement::getId)
+                .toList();
+
+        var bookmarkedIds = loadBookmarkedIds(userId, ids);
+
         List<AnnouncementSummaryDTO> dtos = pageResult.getContent()
                 .stream()
-                .map(AnnouncementSummaryDTO::from)
+                .map(a -> AnnouncementSummaryDTO.from(a, bookmarkedIds.contains(a.getId())))
                 .toList();
 
         return PageResponse.of(pageResult, dtos);
+    }
+
+    private Set<Long> loadBookmarkedIds(Long userId, List<Long> announcementIds) {
+//        if (userId == null) //예외 처리
+//        if (announcementIds == null || announcementIds.isEmpty())  // 예외처리
+
+        List<Long> bookmarked = bookmarkRepository.findBookmarkedAnnouncementIds(userId, announcementIds);
+        return new HashSet<>(bookmarked);
     }
 
     private Sort resolveSort(SortType sortType) {
