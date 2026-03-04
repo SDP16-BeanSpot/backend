@@ -19,7 +19,7 @@ public class NotificationScheduler {
     private final AnnouncementRepository announcementRepository;
     private final NotificationService notificationService;
 
-    @Scheduled(cron = "0 14 12 * * *")
+    @Scheduled(cron = "0 0 8 * * *")
     @Transactional
     public void sendDeadlineNotifications() {
         log.info("마감 임박 공고 알림 스케줄러 실행 시작");
