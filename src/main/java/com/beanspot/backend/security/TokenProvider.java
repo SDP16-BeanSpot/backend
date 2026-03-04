@@ -5,9 +5,13 @@ import io.jsonwebtoken.*;
 import jakarta.annotation.PostConstruct;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.stereotype.Component;
 
 import java.time.Instant;
+import java.util.Collections;
 import java.util.Date;
 
 @Slf4j
@@ -129,6 +133,21 @@ public class TokenProvider {
             log.info("JWT 토큰 없거나 잘못되었습니다.");
         }
         return false;
+    }
+
+    /**
+     * 채팅 : JWT 토큰 정보를 기반으로 Spring Security 인증 객체 생성
+     * StompHandler에서 웹소켓 연결 시 유저를 식별하기 위해 필요
+     * @param token 검증이 완료된 JWT AccessToken
+     * @return Spring Security에서 사용하는 유저 인증 객체 (Authentication)
+     */
+    public Authentication getAuthentication(String token) {
+        Claims claims = getAllClaims(token);
+        String principal = claims.getSubject();
+
+        SimpleGrantedAuthority authority = new SimpleGrantedAuthority("ROLE_USER");
+
+        return new UsernamePasswordAuthenticationToken(principal, token, Collections.singleton(authority));
     }
 
 }

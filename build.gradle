@@ -59,6 +59,11 @@ dependencies {
     //solapi
     implementation 'com.solapi:sdk:1.0.3'
 
+    // 채팅 WebSocket
+    implementation 'org.springframework.boot:spring-boot-starter-websocket'
+    // 채팅 STOMP
+    implementation 'org.webjars:stomp-websocket:2.3.4'
+
     //QueryDsl
     implementation 'com.querydsl:querydsl-jpa:5.0.0:jakarta'
     annotationProcessor "com.querydsl:querydsl-apt:5.0.0:jakarta"
