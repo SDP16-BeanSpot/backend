@@ -2,13 +2,20 @@ package com.beanspot.backend.entity;
 
 import jakarta.persistence.*;
 import lombok.*;
+import org.hibernate.annotations.SoftDelete;
+
+import java.util.UUID;
 
 @Entity
 @Getter
 @Builder
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor
-@Table(name = "user", uniqueConstraints = {@UniqueConstraint(columnNames = "nickname")})
+@SoftDelete(columnName = "is_deleted")
+@Table(name = "user", uniqueConstraints = {
+        @UniqueConstraint(columnNames = "nickname"),
+        @UniqueConstraint(columnNames = "user_id")
+})
 public class User extends BaseEntity { // BaseEntity 상속으로 생성/수정 시간 관리
 
     @Id
@@ -53,6 +60,7 @@ public class User extends BaseEntity { // BaseEntity 상속으로 생성/수정 
     @Column(nullable = false)
     private Role role; // USER 혹은 ADMIN
 
+
     /**
      * 💡 핵심 수정 사항: 데이터 저장 전 기본값 할당
      * @Builder 사용 시 필드 초기값이 null이 되는 문제를 방지합니다.
@@ -75,5 +83,9 @@ public class User extends BaseEntity { // BaseEntity 상속으로 생성/수정 
         if (profileUrl != null) {
             this.profileUrl = profileUrl;
         }
+    }
+
+    public void withdraw(){
+        this.nickname = "deleted_" + UUID.randomUUID().toString().substring(0, 8) + "_" + this.nickname ;
     }
 }
