@@ -34,7 +34,8 @@ public class WebSecurityConfig {
                                 "/swagger-ui/**",
                                 "/v3/api-docs/**",
                                 "/webjars/**",
-                                "/docs/**").permitAll()
+                                "/docs/**",
+                                "/actuator/health").permitAll()
                         .anyRequest().authenticated()
 
                 ).exceptionHandling(exception -> exception
