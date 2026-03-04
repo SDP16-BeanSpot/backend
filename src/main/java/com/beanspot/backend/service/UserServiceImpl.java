@@ -9,11 +9,12 @@ import com.beanspot.backend.dto.user.UserProfileDTO;
 import com.beanspot.backend.entity.Role;
 import com.beanspot.backend.entity.SocialType;
 import com.beanspot.backend.entity.User;
+import com.beanspot.backend.entity.notification.NotificationSetting;
+import com.beanspot.backend.repository.NotificationSettingRepository;
 import com.beanspot.backend.repository.UserRepository;
 import com.beanspot.backend.security.TokenProvider;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -24,13 +25,12 @@ import java.util.Optional;
 @RequiredArgsConstructor
 public class UserServiceImpl implements UserService {
 
-    @Autowired
-    private UserRepository userRepository;
+    private final UserRepository userRepository;
 
     private final PasswordEncoder passwordEncoder;
 
-    @Autowired
-    private TokenProvider tokenProvider;
+    private final TokenProvider tokenProvider;
+    private final NotificationSettingRepository settingRepository;
 
     public SignUpUserDTO.Res createUser(final SignUpUserDTO.Req userDTO) {
 
@@ -57,6 +57,13 @@ public class UserServiceImpl implements UserService {
                 .build();
 
         userRepository.save(user);
+
+        NotificationSetting defaultSetting = NotificationSetting.builder()
+                .user(user)
+                .build();
+
+        settingRepository.save(defaultSetting);
+
 
         return  SignUpUserDTO.Res.builder()
                 .userId(userDTO.getUserId())
