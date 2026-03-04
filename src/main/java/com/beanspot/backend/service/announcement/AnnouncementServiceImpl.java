@@ -10,6 +10,7 @@ import com.beanspot.backend.repository.announcement.AnnouncementRepository;
 import com.beanspot.backend.repository.announcement.AnnouncementScheduleRepository;
 import com.beanspot.backend.service.KakaoGeoCodingService;
 import com.beanspot.backend.service.S3Service;
+import com.beanspot.backend.service.notification.NotificationService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.data.elasticsearch.core.geo.GeoPoint;
@@ -31,13 +32,15 @@ public class AnnouncementServiceImpl implements AnnouncementService {
     private final AnnouncementScheduleRepository scheduleRepository;
     private final ApplicationEventPublisher applicationEventPublisher;
     private final S3Service s3Service;
+    private final NotificationService notificationService;
 
     @Override
     @Transactional(readOnly = true)
     public PageResponse<AnnouncementSummaryDTO> getAnnouncements(
+            Long userId,
             AnnouncementSearchConditionDTO condition
     ) {
-        return searchService.search(condition);
+        return searchService.search(userId, condition);
     }
 
     @Override
@@ -84,6 +87,7 @@ public class AnnouncementServiceImpl implements AnnouncementService {
                 .organizer(reqDTO.getOrganizer())
                 .organizerImgUrl(reqDTO.getOrganizerImgUrl())
                 .imgUrl(uploadedImgUrl)
+                .linkUrl(reqDTO.getLinkUrl())
                 .region(reqDTO.getRegion())
                 .location(reqDTO.getLocation())
                 .startDate(reqDTO.getStartDate())
@@ -99,6 +103,7 @@ public class AnnouncementServiceImpl implements AnnouncementService {
                 .activityMethod(reqDTO.getActivityMethod())
                 .applyMethod(reqDTO.getApplyMethod())
                 .benefits(reqDTO.getBenefits())
+                .teamSize(reqDTO.getTeamSize())
                 .build();
 
         Announcement savedAnnouncement = announcementRepository.save(announcement);
@@ -118,6 +123,8 @@ public class AnnouncementServiceImpl implements AnnouncementService {
                     .toList();
             scheduleRepository.saveAll(schedules);
         }
+
+        notificationService.sendKeywordNotification(announcement);
 
         applicationEventPublisher.publishEvent(
                 new AnnouncementCreatedEvent(announcement.getId())
