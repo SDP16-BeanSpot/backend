@@ -53,3 +53,6 @@ Thumbs.db
 
 # Docker 로컬 설정 파일 제외
 docker-compose.dev.yml
+
+# Firebase Admin SDK Private Key
+src/main/resources/firebase/*.json
