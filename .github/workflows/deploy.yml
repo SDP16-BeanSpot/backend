@@ -64,4 +64,4 @@ jobs:
             docker rm -f beanspot-app || true
             
             # 5. 새 컨테이너 실행
-            docker compose up -d app
+            docker-compose up -d app
