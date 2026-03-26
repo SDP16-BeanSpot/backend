@@ -16,6 +16,7 @@ import org.springframework.data.domain.Slice;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -32,50 +33,52 @@ public class ChatService {
      * 채팅 메시지 저장
      */
     @Transactional
-    public void saveMessage(ChatMessageDto messageDto, String userId) {// userId 추가
-        // 1. 넘겨받은 ID(인터셉터에서 추출한 진짜 ID)로 DB에서 유저 찾기
+    public String saveMessage(ChatMessageDto messageDto, String userId) {
         User sender = userRepository.findById(Long.parseLong(userId))
                 .orElseThrow(() -> new CustomException(ErrorCode.USER_NOT_FOUND));
 
-        // 2. 해당 채팅방 엔티티 조회 (기존 로직 유지)
         ChatRoom room = chatRoomRepository.findById(Long.parseLong(messageDto.getRoomId()))
                 .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 채팅방입니다."));
 
-        // 3. Entity 빌드 (더미 유저 삭제!)
         ChatMessage messageEntity = ChatMessage.builder()
                 .chatRoom(room)
-                .sender(sender) // 이제 진짜 유저인 sender를 넣습니다!
+                .sender(sender)
                 .content(messageDto.getMessage())
                 .msgType(messageDto.getType())
                 .build();
 
-        // 4. DB 저장
-        chatMessageRepository.save(messageEntity);
-
-        // 5. 채팅방의 마지막 메시지 업데이트
+        ChatMessage saved = chatMessageRepository.save(messageEntity);
         room.updateLastMessage(messageDto.getMessage());
+        messageDto.setMessageId(saved.getId());
+
+        return sender.getNickname();
     }
 
     /**
-     * 채팅방의 이전 메시지 내역 조회
+     * 채팅방 메시지 목록 조회 (커서 기반)
+     * lastMessageId가 null이면 최신 메시지부터, 있으면 해당 ID 이전 메시지부터 조회
      */
-    public List<ChatMessageDto> getChatMessages(Long roomId) {
-        List<ChatMessage> entities = chatMessageRepository.findByChatRoomIdOrderByCreatedAtAsc(roomId);
+    public List<ChatMessageDto> getChatMessages(Long roomId, Long lastMessageId, int size) {
+        Pageable pageable = PageRequest.of(0, size);
 
-        // Entity 리스트를 Dto 리스트로 변환
-        return entities.stream()
+        Slice<ChatMessage> slice = (lastMessageId == null)
+                ? chatMessageRepository.findByChatRoomIdOrderByIdDesc(roomId, pageable)
+                : chatMessageRepository.findByChatRoomIdAndIdLessThanOrderByIdDesc(roomId, lastMessageId, pageable);
+
+        List<ChatMessageDto> messages = slice.getContent().stream()
                 .map(entity -> ChatMessageDto.builder()
+                        .messageId(entity.getId())
                         .type(entity.getMsgType())
                         .roomId(entity.getChatRoom().getId().toString())
-                        .sender(entity.getSender().getNickname()) // 임시 닉네임
+                        .sender(entity.getSender().getNickname())
                         .message(entity.getContent())
+                        .parentMsgId(entity.getParentMsgId())
+                        .reactionCount(entity.getReactionCount())
                         .build())
                 .collect(Collectors.toList());
-    }
 
-    public Slice<ChatMessage> getChatMessages(Long roomId, int page, int size) {
-        // 최신순으로 정렬해서 요청한 페이지만큼 가져오기
-        Pageable pageable = PageRequest.of(page, size);
-        return chatMessageRepository.findByChatRoomIdOrderByCreatedAtDesc(roomId, pageable);
+        // 오래된 순으로 정렬해서 반환 (클라이언트 렌더링 편의)
+        Collections.reverse(messages);
+        return messages;
     }
 }
