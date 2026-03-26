@@ -17,7 +17,7 @@ services:
       - backend
 
   elasticsearch:
-    image: ${AWS_ACCOUNT_ID}.dkr.ecr.ap-northeast-2.amazonaws.com/beanspot-app/beanspot-elasticsearch:latest
+    image: ${AWS_ACCOUNT_ID}.dkr.ecr.ap-northeast-2.amazonaws.com/beanspot-elasticsearch:latest
     container_name: elasticsearch
     environment:
       - discovery.type=single-node
