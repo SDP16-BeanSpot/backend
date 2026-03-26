@@ -1,9 +1,6 @@
 package com.beanspot.backend.dto.chat;
 
 import com.beanspot.backend.entity.ChatMessageType;
-import jakarta.persistence.Column;
-import jakarta.persistence.EnumType;
-import jakarta.persistence.Enumerated;
 import lombok.*;
 
 @Getter
@@ -13,10 +10,12 @@ import lombok.*;
 @AllArgsConstructor
 public class ChatMessageDto {
 
+    private Long messageId;
     private ChatMessageType type;
     private String roomId;
     private String sender;
     private String message;
-    private int reactionCount = 0;
+    private Long parentMsgId;
+    private int reactionCount;
 
 }
