@@ -1,4 +1,4 @@
-# develop 브랜치 push 시 EC2 자동 배포 (updated)
+# develop 브랜치 push 시 EC2 자동 배포 (updated2)
 name: Deploy To EC2
 on:
   push:
