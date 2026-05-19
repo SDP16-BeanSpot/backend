@@ -36,6 +36,7 @@ public class WebSecurityConfig {
                                 "/v3/api-docs/**",
                                 "/webjars/**",
                                 "/docs/**").permitAll()
+
                         // 웹소켓 엔드포인트에 대한 접근 허용
                         .requestMatchers("/ws-stomp/**").permitAll()
                         .anyRequest().authenticated()
