@@ -52,3 +52,12 @@ oauth:
 springdoc:
   swagger-ui:
     path: ${SPRINGDOC_SWAGGER_UI_PATH}
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health
+  endpoint:
+    health:
+      show-details: never

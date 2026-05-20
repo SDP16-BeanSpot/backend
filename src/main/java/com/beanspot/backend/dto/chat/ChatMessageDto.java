@@ -4,6 +4,7 @@ import com.beanspot.backend.entity.chat.ChatMessageType;
 import lombok.*;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 @Getter
 @Builder
@@ -18,6 +19,7 @@ public class ChatMessageDto {
     private String content;
     private Long parentMsgId;
     private int reactionCount;
+    private List<ReactionSummaryDto> reactions;
     private LocalDateTime createdAt;
 
     public ChatMessageDto withSenderAndId(String sender, Long messageId) {
@@ -29,6 +31,7 @@ public class ChatMessageDto {
                 .content(this.content)
                 .parentMsgId(this.parentMsgId)
                 .reactionCount(this.reactionCount)
+                .reactions(List.of())
                 .createdAt(LocalDateTime.now())
                 .build();
     }

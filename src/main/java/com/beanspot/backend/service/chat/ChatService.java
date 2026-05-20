@@ -6,10 +6,14 @@ import com.beanspot.backend.dto.chat.ChatMessageDto;
 import com.beanspot.backend.dto.chat.ChatParticipantResponse;
 import com.beanspot.backend.dto.chat.ChatRoomCreateRequest;
 import com.beanspot.backend.dto.chat.ChatRoomResponse;
+import com.beanspot.backend.dto.chat.ReactionMappingDto;
+import com.beanspot.backend.dto.chat.ReactionSummaryDto;
+import com.beanspot.backend.entity.chat.ReactionType;
 import com.beanspot.backend.entity.chat.ChatMessage;
 import com.beanspot.backend.entity.chat.ChatParticipant;
 import com.beanspot.backend.entity.chat.ChatRoom;
 import com.beanspot.backend.entity.User;
+import com.beanspot.backend.repository.chat.ChatMessageReactionRepository;
 import com.beanspot.backend.repository.chat.ChatMessageRepository;
 import com.beanspot.backend.repository.chat.ChatParticipantRepository;
 import com.beanspot.backend.repository.chat.ChatRoomRepository;
@@ -24,6 +28,8 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -31,6 +37,7 @@ import java.util.List;
 public class ChatService {
 
     private final ChatMessageRepository chatMessageRepository;
+    private final ChatMessageReactionRepository chatMessageReactionRepository;
     private final ChatRoomRepository chatRoomRepository;
     private final ChatParticipantRepository chatParticipantRepository;
     private final UserRepository userRepository;
@@ -77,17 +84,42 @@ public class ChatService {
                 ? chatMessageRepository.findByChatRoomIdOrderByIdDesc(roomId, pageable)
                 : chatMessageRepository.findByChatRoomIdAndIdLessThanOrderByIdDesc(roomId, lastMessageId, pageable);
 
-        List<ChatMessageDto> messages = new ArrayList<>(slice.getContent().stream()
-                .map(entity -> ChatMessageDto.builder()
-                        .messageId(entity.getId())
-                        .msgType(entity.getMsgType())
-                        .roomId(entity.getChatRoom().getId())
-                        .sender(entity.getSender().getNickname())
-                        .content(entity.getContent())
-                        .parentMsgId(entity.getParentMsgId())
-                        .reactionCount(entity.getReactionCount())
-                        .createdAt(entity.getCreatedAt())
-                        .build())
+        List<ChatMessage> content = slice.getContent();
+        List<Long> messageIds = content.stream().map(ChatMessage::getId).toList();
+
+        Map<Long, Map<ReactionType, List<ReactionMappingDto>>> reactionsByMsgAndType =
+                chatMessageReactionRepository.findReactionMappingsByMessageIds(messageIds).stream()
+                        .collect(Collectors.groupingBy(
+                                ReactionMappingDto::messageId,
+                                Collectors.groupingBy(ReactionMappingDto::reactionType)
+                        ));
+
+        List<ChatMessageDto> messages = new ArrayList<>(content.stream()
+                .map(entity -> {
+                    Map<ReactionType, List<ReactionMappingDto>> byType =
+                            reactionsByMsgAndType.getOrDefault(entity.getId(), Map.of());
+
+                    List<ReactionSummaryDto> reactions = byType.entrySet().stream()
+                            .map(e -> ReactionSummaryDto.builder()
+                                    .reactionType(e.getKey())
+                                    .count(e.getValue().size())
+                                    .reacted(e.getValue().stream()
+                                            .anyMatch(r -> r.userId().equals(userId)))
+                                    .build())
+                            .toList();
+
+                    return ChatMessageDto.builder()
+                            .messageId(entity.getId())
+                            .msgType(entity.getMsgType())
+                            .roomId(entity.getChatRoom().getId())
+                            .sender(entity.getSender().getNickname())
+                            .content(entity.getContent())
+                            .parentMsgId(entity.getParentMsgId())
+                            .reactionCount(entity.getReactionCount())
+                            .reactions(reactions)
+                            .createdAt(entity.getCreatedAt())
+                            .build();
+                })
                 .toList());
 
         Collections.reverse(messages);

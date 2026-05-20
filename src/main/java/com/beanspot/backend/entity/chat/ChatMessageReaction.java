@@ -27,5 +27,6 @@ public class ChatMessageReaction extends BaseEntity {
     @JoinColumn(name = "user_id")
     private User user;
 
-    private String reactionType;
+    @Enumerated(EnumType.STRING)
+    private ReactionType reactionType;
 }
