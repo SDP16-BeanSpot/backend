@@ -8,6 +8,10 @@ import com.beanspot.backend.dto.chat.ChatMessageDto;
 import com.beanspot.backend.dto.chat.ChatParticipantResponse;
 import com.beanspot.backend.dto.chat.ChatRoomCreateRequest;
 import com.beanspot.backend.dto.chat.ChatRoomResponse;
+import com.beanspot.backend.dto.chat.ReactionBroadcastDto;
+import com.beanspot.backend.dto.chat.ReactionResultDto;
+import com.beanspot.backend.dto.chat.ReactionStompRequest;
+import com.beanspot.backend.service.chat.ReactionService;
 import com.beanspot.backend.entity.chat.ChatMessageType;
 import com.beanspot.backend.service.chat.ChatService;
 import com.beanspot.backend.security.CurrentUserId;
@@ -33,6 +37,7 @@ public class ChatController {
 
     private final SimpMessageSendingOperations messagingTemplate;
     private final ChatService chatService;
+    private final ReactionService reactionService;
 
     @MessageMapping("/chat/message")
     public void message(ChatMessageDto message, Principal principal) {
@@ -43,6 +48,22 @@ public class ChatController {
 
         ChatMessageDto response = chatService.saveMessage(message, principal.getName());
         messagingTemplate.convertAndSend("/sub/chat/room/" + response.getRoomId(), response);
+    }
+
+    @MessageMapping("/chat/reaction")
+    public void reaction(ReactionStompRequest request, Principal principal) {
+        if (principal == null) {
+            log.error("인증 정보를 찾을 수 없습니다.");
+            return;
+        }
+
+        Long userId = Long.parseLong(principal.getName());
+        ReactionResultDto result = reactionService.toggleReaction(userId, request.getMessageId(), request.getReactionType());
+
+        messagingTemplate.convertAndSend(
+                "/sub/chat/room/" + request.getRoomId(),
+                ReactionBroadcastDto.of(request.getMessageId(), result.reactionType(), result.count(), userId, result.added())
+        );
     }
 
     @MessageExceptionHandler
