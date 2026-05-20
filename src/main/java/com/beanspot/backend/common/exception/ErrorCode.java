@@ -43,6 +43,12 @@ public enum ErrorCode {
     // ==================== Chat (41xxx) ====================
     CHAT_ROOM_NOT_FOUND(41001, HttpStatus.NOT_FOUND, "존재하지 않는 채팅방입니다."),
     CHAT_NOT_PARTICIPANT(41002, HttpStatus.FORBIDDEN, "채팅방 참여자가 아닙니다."),
+    CHAT_MESSAGE_NOT_FOUND(41003, HttpStatus.NOT_FOUND, "존재하지 않는 메시지입니다."),
+
+    // ==================== Report (51xxx) ====================
+    REPORT_NOT_FOUND(51001, HttpStatus.NOT_FOUND, "존재하지 않는 신고입니다."),
+    REPORT_ALREADY_EXISTS(51002, HttpStatus.CONFLICT, "이미 신고한 메시지입니다."),
+    REPORT_SELF_NOT_ALLOWED(51003, HttpStatus.BAD_REQUEST, "자신을 신고할 수 없습니다."),
     ;
 
 
