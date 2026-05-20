@@ -17,6 +17,7 @@ public class ChatRoomResponse {
     private String lastMsgContent;
     private LocalDateTime lastMsgAt;
     private Integer participantCount;
+    private long unreadCount;
     @JsonIgnore
     private boolean isNewParticipant;
 
@@ -28,6 +29,19 @@ public class ChatRoomResponse {
                 .lastMsgContent(room.getLastMsgContent())
                 .lastMsgAt(room.getLastMsgAt())
                 .participantCount(room.getParticipantCount())
+                .isNewParticipant(isNewParticipant)
+                .build();
+    }
+
+    public static ChatRoomResponse from(ChatRoom room, boolean isNewParticipant, long unreadCount) {
+        return ChatRoomResponse.builder()
+                .roomId(room.getId())
+                .announcementId(room.getAnnouncementId())
+                .roomName(room.getRoomName())
+                .lastMsgContent(room.getLastMsgContent())
+                .lastMsgAt(room.getLastMsgAt())
+                .participantCount(room.getParticipantCount())
+                .unreadCount(unreadCount)
                 .isNewParticipant(isNewParticipant)
                 .build();
     }

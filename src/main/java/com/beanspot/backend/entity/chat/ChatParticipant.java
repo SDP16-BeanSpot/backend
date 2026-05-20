@@ -52,4 +52,8 @@ public class ChatParticipant extends BaseEntity {
     public void toggleNotification() {
         this.isNotified = !this.isNotified;
     }
+
+    public void updateLastReadMsgId(Long messageId) {
+        this.lastReadMsgId = messageId;
+    }
 }
