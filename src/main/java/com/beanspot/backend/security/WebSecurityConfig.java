@@ -30,6 +30,7 @@ public class WebSecurityConfig {
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/api/admin/**").hasRole("ADMIN")
                         .requestMatchers("/",
+                                "/index.html",
                                 "/api/auth/**",
                                 "/actuator/health",
                                 "/swagger-ui/**",

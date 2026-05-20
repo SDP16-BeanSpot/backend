@@ -1,6 +1,6 @@
-package com.beanspot.backend.repository;
+package com.beanspot.backend.repository.chat;
 
-import com.beanspot.backend.entity.ChatRoom;
+import com.beanspot.backend.entity.chat.ChatRoom;
 import org.springframework.data.jpa.repository.JpaRepository;
 import java.util.Optional;
 

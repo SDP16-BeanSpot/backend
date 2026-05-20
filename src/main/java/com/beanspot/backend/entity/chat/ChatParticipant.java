@@ -1,17 +1,22 @@
-package com.beanspot.backend.entity;
+package com.beanspot.backend.entity.chat;
 
+import com.beanspot.backend.entity.BaseEntity;
+import com.beanspot.backend.entity.User;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.experimental.SuperBuilder;
 
 import java.time.LocalDateTime;
 
 @Entity
 @Getter
+@SuperBuilder
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Table(name = "chat_participant")
-public class ChatParticipant {
+public class ChatParticipant extends BaseEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
@@ -20,16 +25,20 @@ public class ChatParticipant {
     @JoinColumn(name = "room_id")
     private ChatRoom chatRoom;
 
-    private Long userId;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "user_id")
+    private User user;
 
-    private String role; // ADMIN, USER
+    private String role;
 
+    @Builder.Default
     private LocalDateTime enteredAt = LocalDateTime.now();
 
-    private Boolean isNotified = true;
+    @Builder.Default
+    private boolean isNotified = true;
 
     private Long lastReadMsgId;
 
-    private Boolean isPinned = false;
-
+    @Builder.Default
+    private boolean isPinned = false;
 }
