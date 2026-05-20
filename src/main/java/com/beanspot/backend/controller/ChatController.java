@@ -1,6 +1,8 @@
 package com.beanspot.backend.controller;
 
 import com.beanspot.backend.common.exception.CustomException;
+import com.beanspot.backend.common.exception.ErrorCode;
+import com.beanspot.backend.common.exception.ExceptionDto;
 import com.beanspot.backend.dto.chat.ChatMessageDto;
 import com.beanspot.backend.service.chat.ChatService;
 import lombok.RequiredArgsConstructor;
@@ -36,8 +38,10 @@ public class ChatController {
     public void handleMessageException(Exception e, Principal principal) {
         log.error("STOMP 메시지 처리 오류 - user: {}, error: {}", principal != null ? principal.getName() : "unknown", e.getMessage());
         if (principal != null) {
-            String errorMsg = (e instanceof CustomException ce) ? ce.getMessage() : "메시지 처리 중 오류가 발생했습니다.";
-            messagingTemplate.convertAndSendToUser(principal.getName(), "/queue/errors", errorMsg);
+            ExceptionDto error = (e instanceof CustomException ce)
+                    ? ExceptionDto.of(ce.getErrorCode())
+                    : ExceptionDto.of(ErrorCode.INTERNAL_SERVER_ERROR);
+            messagingTemplate.convertAndSendToUser(principal.getName(), "/queue/errors", error);
         }
     }
 
