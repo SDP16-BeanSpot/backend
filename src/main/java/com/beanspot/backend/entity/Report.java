@@ -34,17 +34,20 @@ public class Report {
     @Enumerated(EnumType.STRING)
     private ReportType reportType;
 
+    private String content;
+
     @Enumerated(EnumType.STRING)
     private ReportStatus status;
 
     private LocalDateTime createdAt;
 
     @Builder
-    public Report(User reporter, User reportedUser, ChatMessage message, ReportType reportType) {
+    public Report(User reporter, User reportedUser, ChatMessage message, ReportType reportType, String content) {
         this.reporter = reporter;
         this.reportedUser = reportedUser;
         this.message = message;
         this.reportType = reportType;
+        this.content = content;
         this.status = ReportStatus.PENDING;
         this.createdAt = LocalDateTime.now();
     }

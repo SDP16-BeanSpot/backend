@@ -19,8 +19,12 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(MethodArgumentNotValidException.class)
     public ApiResponse<?> handleValidation(MethodArgumentNotValidException e) {
-        log.warn("Validation failed: {}", e.getMessage());
-        return ApiResponse.fail(new CustomException(ErrorCode.INVALID_INPUT_VALUE));
+        String message = e.getBindingResult().getFieldErrors().stream()
+                .map(fe -> fe.getDefaultMessage())
+                .findFirst()
+                .orElse(ErrorCode.INVALID_INPUT_VALUE.getMessage());
+        log.warn("Validation failed: {}", message);
+        return ApiResponse.fail(ErrorCode.INVALID_INPUT_VALUE, message);
     }
 
     @ExceptionHandler(Exception.class)
