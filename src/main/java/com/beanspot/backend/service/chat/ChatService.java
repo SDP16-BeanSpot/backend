@@ -3,6 +3,7 @@ package com.beanspot.backend.service.chat;
 import com.beanspot.backend.common.exception.CustomException;
 import com.beanspot.backend.common.exception.ErrorCode;
 import com.beanspot.backend.dto.chat.ChatMessageDto;
+import com.beanspot.backend.dto.chat.ChatParticipantResponse;
 import com.beanspot.backend.dto.chat.ChatRoomCreateRequest;
 import com.beanspot.backend.dto.chat.ChatRoomResponse;
 import com.beanspot.backend.entity.chat.ChatMessage;
@@ -93,9 +94,15 @@ public class ChatService {
         return messages;
     }
 
+    public String getUserNickname(Long userId) {
+        return userRepository.findById(userId)
+                .orElseThrow(() -> new CustomException(ErrorCode.USER_NOT_FOUND))
+                .getNickname();
+    }
+
     public List<ChatRoomResponse> getChatRooms(Long userId) {
         return chatParticipantRepository.findAllByUserIdWithRoom(userId).stream()
-                .map(cp -> ChatRoomResponse.from(cp.getChatRoom()))
+                .map(cp -> ChatRoomResponse.from(cp.getChatRoom(), false))
                 .toList();
     }
 
@@ -110,6 +117,37 @@ public class ChatService {
         return joinExistingChatRoom(user, room);
     }
 
+    @Transactional
+    public ChatParticipantResponse togglePin(Long userId, Long roomId) {
+        ChatParticipant participant = chatParticipantRepository
+                .findByChatRoomIdAndUser_Id(roomId, userId)
+                .orElseThrow(() -> new CustomException(ErrorCode.CHAT_NOT_PARTICIPANT));
+        participant.togglePin();
+        return ChatParticipantResponse.from(participant);
+    }
+
+    @Transactional
+    public ChatParticipantResponse toggleNotification(Long userId, Long roomId) {
+        ChatParticipant participant = chatParticipantRepository
+                .findByChatRoomIdAndUser_Id(roomId, userId)
+                .orElseThrow(() -> new CustomException(ErrorCode.CHAT_NOT_PARTICIPANT));
+        participant.toggleNotification();
+        return ChatParticipantResponse.from(participant);
+    }
+
+    @Transactional
+    public void leaveChatRoom(Long userId, Long roomId) {
+        ChatRoom room = chatRoomRepository.findById(roomId)
+                .orElseThrow(() -> new CustomException(ErrorCode.CHAT_ROOM_NOT_FOUND));
+
+        ChatParticipant participant = chatParticipantRepository
+                .findByChatRoomIdAndUser_Id(roomId, userId)
+                .orElseThrow(() -> new CustomException(ErrorCode.CHAT_NOT_PARTICIPANT));
+
+        chatParticipantRepository.delete(participant);
+        chatRoomRepository.decrementParticipantCount(roomId);
+    }
+
     private ChatRoomResponse joinExistingChatRoom(User user, ChatRoom room) {
         boolean isAlreadyParticipant = chatParticipantRepository
                 .findByChatRoomIdAndUser_Id(room.getId(), user.getId())
@@ -122,9 +160,10 @@ public class ChatService {
                     .user(user)
                     .role("GUEST")
                     .build());
-            room = chatRoomRepository.findById(room.getId()).orElse(room);
+            room = chatRoomRepository.findById(room.getId())
+                    .orElseThrow(() -> new CustomException(ErrorCode.CHAT_ROOM_NOT_FOUND));
         }
 
-        return ChatRoomResponse.from(room);
+        return ChatRoomResponse.from(room, !isAlreadyParticipant);
     }
 }

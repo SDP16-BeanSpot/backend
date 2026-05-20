@@ -11,7 +11,11 @@ import java.util.Optional;
 public interface ChatRoomRepository extends JpaRepository<ChatRoom, Long> {
     Optional<ChatRoom> findByAnnouncementId(Long announcementId);
 
-    @Modifying
+    @Modifying(clearAutomatically = true)
     @Query("UPDATE ChatRoom r SET r.participantCount = r.participantCount + 1 WHERE r.id = :roomId")
     void incrementParticipantCount(@Param("roomId") Long roomId);
+
+    @Modifying(clearAutomatically = true)
+    @Query("UPDATE ChatRoom r SET r.participantCount = CASE WHEN r.participantCount > 0 THEN r.participantCount - 1 ELSE 0 END WHERE r.id = :roomId")
+    void decrementParticipantCount(@Param("roomId") Long roomId);
 }

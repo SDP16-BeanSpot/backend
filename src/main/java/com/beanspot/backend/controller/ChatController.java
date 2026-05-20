@@ -5,8 +5,10 @@ import com.beanspot.backend.common.exception.ErrorCode;
 import com.beanspot.backend.common.exception.ExceptionDto;
 import com.beanspot.backend.common.response.ApiResponse;
 import com.beanspot.backend.dto.chat.ChatMessageDto;
+import com.beanspot.backend.dto.chat.ChatParticipantResponse;
 import com.beanspot.backend.dto.chat.ChatRoomCreateRequest;
 import com.beanspot.backend.dto.chat.ChatRoomResponse;
+import com.beanspot.backend.entity.chat.ChatMessageType;
 import com.beanspot.backend.service.chat.ChatService;
 import com.beanspot.backend.security.CurrentUserId;
 import io.swagger.v3.oas.annotations.Operation;
@@ -65,16 +67,57 @@ public class ChatController {
     public ApiResponse<ChatRoomResponse> joinChatRoom(
             @Valid @RequestBody ChatRoomCreateRequest request,
             @CurrentUserId Long userId) {
-        return ApiResponse.created(chatService.joinChatRoom(userId, request));
+        ChatRoomResponse response = chatService.joinChatRoom(userId, request);
+        if (response.isNewParticipant()) {
+            ChatMessageDto enterMsg = ChatMessageDto.builder()
+                    .msgType(ChatMessageType.ENTER)
+                    .roomId(response.getRoomId())
+                    .content(chatService.getUserNickname(userId) + "님이 입장하셨습니다.")
+                    .build();
+            messagingTemplate.convertAndSend("/sub/chat/room/" + response.getRoomId(), enterMsg);
+        }
+        return ApiResponse.created(response);
+    }
+
+    @Operation(summary = "채팅방 핀 토글", description = "채팅방을 목록 상단에 고정하거나 해제합니다.")
+    @PatchMapping("/rooms/{roomId}/pin")
+    public ApiResponse<ChatParticipantResponse> togglePin(
+            @PathVariable Long roomId,
+            @CurrentUserId Long userId) {
+        return ApiResponse.ok(chatService.togglePin(userId, roomId));
+    }
+
+    @Operation(summary = "채팅방 알림 토글", description = "채팅방 알림을 켜거나 끕니다.")
+    @PatchMapping("/rooms/{roomId}/notification")
+    public ApiResponse<ChatParticipantResponse> toggleNotification(
+            @PathVariable Long roomId,
+            @CurrentUserId Long userId) {
+        return ApiResponse.ok(chatService.toggleNotification(userId, roomId));
+    }
+
+    @Operation(summary = "채팅방 나가기", description = "채팅방에서 나갑니다. 참여자 목록에서 제거되며 퇴장 메시지가 브로드캐스트됩니다.")
+    @DeleteMapping("/rooms/{roomId}/leave")
+    public ApiResponse<Void> leaveChatRoom(
+            @PathVariable Long roomId,
+            @CurrentUserId Long userId) {
+        String nickname = chatService.getUserNickname(userId);
+        chatService.leaveChatRoom(userId, roomId);
+        ChatMessageDto quitMsg = ChatMessageDto.builder()
+                .msgType(ChatMessageType.QUIT)
+                .roomId(roomId)
+                .content(nickname + "님이 나가셨습니다.")
+                .build();
+        messagingTemplate.convertAndSend("/sub/chat/room/" + roomId, quitMsg);
+        return ApiResponse.ok(null);
     }
 
     @Operation(summary = "채팅 메시지 목록 조회", description = "커서 기반 페이지네이션. lastMessageId 없으면 최신부터, 있으면 해당 ID 이전 메시지를 조회합니다.")
     @GetMapping("/rooms/{roomId}/messages")
-    public List<ChatMessageDto> getChatMessages(
+    public ApiResponse<List<ChatMessageDto>> getChatMessages(
             @PathVariable Long roomId,
             @RequestParam(required = false) Long lastMessageId,
             @RequestParam(defaultValue = "30") int size,
             @CurrentUserId Long userId) {
-        return chatService.getChatMessages(roomId, userId, lastMessageId, size);
+        return ApiResponse.ok(chatService.getChatMessages(roomId, userId, lastMessageId, size));
     }
 }

@@ -11,6 +11,6 @@ import java.util.Optional;
 public interface ChatParticipantRepository extends JpaRepository<ChatParticipant, Long> {
     Optional<ChatParticipant> findByChatRoomIdAndUser_Id(Long roomId, Long userId);
 
-    @Query("SELECT cp FROM ChatParticipant cp JOIN FETCH cp.chatRoom WHERE cp.user.id = :userId ORDER BY cp.chatRoom.lastMsgAt DESC NULLS LAST")
+    @Query("SELECT cp FROM ChatParticipant cp JOIN FETCH cp.chatRoom WHERE cp.user.id = :userId ORDER BY cp.isPinned DESC, cp.pinnedAt ASC NULLS LAST, cp.chatRoom.lastMsgAt DESC NULLS LAST")
     List<ChatParticipant> findAllByUserIdWithRoom(@Param("userId") Long userId);
 }
