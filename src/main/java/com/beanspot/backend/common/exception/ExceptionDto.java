@@ -9,7 +9,14 @@ public class ExceptionDto {
         this.code = errorCode.getCode();
         this.message = errorCode.getMessage();
     }
+
+    public ExceptionDto(ErrorCode errorCode, String message) {
+        this.code = errorCode.getCode();
+        this.message = message;
+    }
+
     public static ExceptionDto of(ErrorCode errorCode) { return new ExceptionDto(errorCode); }
+    public static ExceptionDto of(ErrorCode errorCode, String message) { return new ExceptionDto(errorCode, message); }
 
     public Integer getCode() { return code; }
     public String getMessage() { return message; }
