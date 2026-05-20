@@ -1,4 +1,4 @@
-package com.beanspot.backend.entity;
+package com.beanspot.backend.entity.chat;
 
 public enum ChatMessageType {
     TALK,   // 일반 대화

@@ -39,6 +39,10 @@ public enum ErrorCode {
 
     // ==================== ANNOUNCEMENT (31xxx) ====================
     ANNOUNCEMENT_NOT_FOUND(31001, HttpStatus.NOT_FOUND, "해당 공고를 찾을 수 없습니다."),
+
+    // ==================== Chat (41xxx) ====================
+    CHAT_ROOM_NOT_FOUND(41001, HttpStatus.NOT_FOUND, "존재하지 않는 채팅방입니다."),
+    CHAT_NOT_PARTICIPANT(41002, HttpStatus.FORBIDDEN, "채팅방 참여자가 아닙니다."),
     ;
 
 
