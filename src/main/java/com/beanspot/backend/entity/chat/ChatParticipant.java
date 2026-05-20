@@ -41,4 +41,15 @@ public class ChatParticipant extends BaseEntity {
 
     @Builder.Default
     private boolean isPinned = false;
+
+    private LocalDateTime pinnedAt;
+
+    public void togglePin() {
+        this.isPinned = !this.isPinned;
+        this.pinnedAt = this.isPinned ? LocalDateTime.now() : null;
+    }
+
+    public void toggleNotification() {
+        this.isNotified = !this.isNotified;
+    }
 }

@@ -1,6 +1,7 @@
 package com.beanspot.backend.dto.chat;
 
 import com.beanspot.backend.entity.chat.ChatRoom;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.Builder;
 import lombok.Getter;
 
@@ -16,8 +17,10 @@ public class ChatRoomResponse {
     private String lastMsgContent;
     private LocalDateTime lastMsgAt;
     private Integer participantCount;
+    @JsonIgnore
+    private boolean isNewParticipant;
 
-    public static ChatRoomResponse from(ChatRoom room) {
+    public static ChatRoomResponse from(ChatRoom room, boolean isNewParticipant) {
         return ChatRoomResponse.builder()
                 .roomId(room.getId())
                 .announcementId(room.getAnnouncementId())
@@ -25,6 +28,7 @@ public class ChatRoomResponse {
                 .lastMsgContent(room.getLastMsgContent())
                 .lastMsgAt(room.getLastMsgAt())
                 .participantCount(room.getParticipantCount())
+                .isNewParticipant(isNewParticipant)
                 .build();
     }
 }
