@@ -8,6 +8,7 @@ import com.beanspot.backend.dto.chat.ChatRoomCreateRequest;
 import com.beanspot.backend.dto.chat.ChatRoomResponse;
 import com.beanspot.backend.dto.chat.ReactionMappingDto;
 import com.beanspot.backend.dto.chat.ReactionSummaryDto;
+import com.beanspot.backend.dto.chat.UnreadCountProjection;
 import com.beanspot.backend.entity.chat.ReactionType;
 import com.beanspot.backend.entity.chat.ChatMessage;
 import com.beanspot.backend.entity.chat.ChatParticipant;
@@ -133,9 +134,23 @@ public class ChatService {
     }
 
     public List<ChatRoomResponse> getChatRooms(Long userId) {
-        return chatParticipantRepository.findAllByUserIdWithRoom(userId).stream()
-                .map(cp -> ChatRoomResponse.from(cp.getChatRoom(), false))
+        List<ChatParticipant> participants = chatParticipantRepository.findAllByUserIdWithRoom(userId);
+
+        Map<Long, Long> unreadCountMap = chatMessageRepository.countUnreadMessagesByUserId(userId).stream()
+                .collect(Collectors.toMap(UnreadCountProjection::getRoomId, UnreadCountProjection::getUnreadCount));
+
+        return participants.stream()
+                .map(cp -> ChatRoomResponse.from(cp.getChatRoom(), false,
+                        unreadCountMap.getOrDefault(cp.getChatRoom().getId(), 0L)))
                 .toList();
+    }
+
+    @Transactional
+    public void saveLastReadMsgId(Long userId, Long roomId) {
+        chatParticipantRepository.findByChatRoomIdAndUser_Id(roomId, userId).ifPresent(participant ->
+                chatMessageRepository.findTopByChatRoomIdOrderByIdDesc(roomId)
+                        .ifPresent(msg -> participant.updateLastReadMsgId(msg.getId()))
+        );
     }
 
     @Transactional

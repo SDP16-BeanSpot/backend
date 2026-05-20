@@ -1,5 +1,6 @@
 package com.beanspot.backend.repository.chat;
 
+import com.beanspot.backend.dto.chat.UnreadCountProjection;
 import com.beanspot.backend.entity.chat.ChatMessage;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Slice;
@@ -7,6 +8,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
+import java.util.List;
 import java.util.Optional;
 
 public interface ChatMessageRepository extends JpaRepository<ChatMessage, Long> {
@@ -19,4 +21,14 @@ public interface ChatMessageRepository extends JpaRepository<ChatMessage, Long> 
 
     @Query("SELECT m FROM ChatMessage m JOIN FETCH m.sender WHERE m.id = :messageId")
     Optional<ChatMessage> findByIdWithSender(@Param("messageId") Long messageId);
+
+    Optional<ChatMessage> findTopByChatRoomIdOrderByIdDesc(Long roomId);
+
+    @Query("SELECT m.chatRoom.id AS roomId, COUNT(m.id) AS unreadCount " +
+           "FROM ChatMessage m " +
+           "JOIN ChatParticipant cp ON m.chatRoom.id = cp.chatRoom.id " +
+           "WHERE cp.user.id = :userId " +
+           "AND (cp.lastReadMsgId IS NULL OR m.id > cp.lastReadMsgId) " +
+           "GROUP BY m.chatRoom.id")
+    List<UnreadCountProjection> countUnreadMessagesByUserId(@Param("userId") Long userId);
 }
