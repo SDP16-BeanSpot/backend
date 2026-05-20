@@ -36,11 +36,4 @@ public class ChatRoom extends BaseEntity {
         this.lastMsgAt = LocalDateTime.now();
     }
 
-    public void incrementParticipantCount() {
-        this.participantCount++;
-    }
-
-    public void decrementParticipantCount() {
-        if (this.participantCount > 0) this.participantCount--;
-    }
 }
