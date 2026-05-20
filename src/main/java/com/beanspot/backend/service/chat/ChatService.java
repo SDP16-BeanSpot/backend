@@ -3,7 +3,10 @@ package com.beanspot.backend.service.chat;
 import com.beanspot.backend.common.exception.CustomException;
 import com.beanspot.backend.common.exception.ErrorCode;
 import com.beanspot.backend.dto.chat.ChatMessageDto;
+import com.beanspot.backend.dto.chat.ChatRoomCreateRequest;
+import com.beanspot.backend.dto.chat.ChatRoomResponse;
 import com.beanspot.backend.entity.chat.ChatMessage;
+import com.beanspot.backend.entity.chat.ChatParticipant;
 import com.beanspot.backend.entity.chat.ChatRoom;
 import com.beanspot.backend.entity.User;
 import com.beanspot.backend.repository.chat.ChatMessageRepository;
@@ -30,7 +33,6 @@ public class ChatService {
     private final ChatRoomRepository chatRoomRepository;
     private final ChatParticipantRepository chatParticipantRepository;
     private final UserRepository userRepository;
-
     @Transactional
     public ChatMessageDto saveMessage(ChatMessageDto messageDto, String userId) {
         if (messageDto.getContent() == null || messageDto.getContent().isBlank()) {
@@ -89,5 +91,40 @@ public class ChatService {
 
         Collections.reverse(messages);
         return messages;
+    }
+
+    public List<ChatRoomResponse> getChatRooms(Long userId) {
+        return chatParticipantRepository.findAllByUserIdWithRoom(userId).stream()
+                .map(cp -> ChatRoomResponse.from(cp.getChatRoom()))
+                .toList();
+    }
+
+    @Transactional
+    public ChatRoomResponse joinChatRoom(Long userId, ChatRoomCreateRequest request) {
+        ChatRoom room = chatRoomRepository.findByAnnouncementId(request.getAnnouncementId())
+                .orElseThrow(() -> new CustomException(ErrorCode.CHAT_ROOM_NOT_FOUND));
+
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new CustomException(ErrorCode.USER_NOT_FOUND));
+
+        return joinExistingChatRoom(user, room);
+    }
+
+    private ChatRoomResponse joinExistingChatRoom(User user, ChatRoom room) {
+        boolean isAlreadyParticipant = chatParticipantRepository
+                .findByChatRoomIdAndUser_Id(room.getId(), user.getId())
+                .isPresent();
+
+        if (!isAlreadyParticipant) {
+            chatRoomRepository.incrementParticipantCount(room.getId());
+            chatParticipantRepository.save(ChatParticipant.builder()
+                    .chatRoom(room)
+                    .user(user)
+                    .role("GUEST")
+                    .build());
+            room = chatRoomRepository.findById(room.getId()).orElse(room);
+        }
+
+        return ChatRoomResponse.from(room);
     }
 }
