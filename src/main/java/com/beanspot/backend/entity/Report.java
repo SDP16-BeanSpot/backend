@@ -35,8 +35,7 @@ public class Report {
     private ReportType reportType;
 
     @Enumerated(EnumType.STRING)
-    @Builder.Default
-    private ReportStatus status = ReportStatus.PENDING;
+    private ReportStatus status;
 
     private LocalDateTime createdAt;
 
