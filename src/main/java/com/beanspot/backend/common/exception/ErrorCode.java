@@ -50,6 +50,7 @@ public enum ErrorCode {
     REPORT_ALREADY_EXISTS(51002, HttpStatus.CONFLICT, "이미 신고한 메시지입니다."),
     REPORT_SELF_NOT_ALLOWED(51003, HttpStatus.BAD_REQUEST, "자신을 신고할 수 없습니다."),
     REPORT_TARGET_NOT_ALLOWED(51004, HttpStatus.BAD_REQUEST, "신고할 수 없는 메시지입니다."),
+    REPORT_ALREADY_PROCESSED(51005, HttpStatus.CONFLICT, "이미 처리된 신고입니다."),
     ;
 
 

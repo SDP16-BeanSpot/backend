@@ -1,5 +1,7 @@
 package com.beanspot.backend.entity;
 
+import com.beanspot.backend.common.exception.CustomException;
+import com.beanspot.backend.common.exception.ErrorCode;
 import com.beanspot.backend.entity.chat.ChatMessage;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
@@ -53,10 +55,16 @@ public class Report {
     }
 
     public void complete() {
+        if (this.status != ReportStatus.PENDING) {
+            throw new CustomException(ErrorCode.REPORT_ALREADY_PROCESSED);
+        }
         this.status = ReportStatus.COMPLETED;
     }
 
     public void reject() {
+        if (this.status != ReportStatus.PENDING) {
+            throw new CustomException(ErrorCode.REPORT_ALREADY_PROCESSED);
+        }
         this.status = ReportStatus.REJECTED;
     }
 }
