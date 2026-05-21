@@ -6,8 +6,10 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
+import org.springframework.transaction.annotation.Transactional;
 import com.beanspot.backend.dto.chat.ReactionMappingDto;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
@@ -27,4 +29,15 @@ public interface ChatMessageReactionRepository extends JpaRepository<ChatMessage
     @Modifying(clearAutomatically = true)
     @Query("UPDATE ChatMessage m SET m.reactionCount = CASE WHEN m.reactionCount > 0 THEN m.reactionCount - 1 ELSE 0 END WHERE m.id = :messageId")
     void decrementReactionCount(@Param("messageId") Long messageId);
+
+    @Transactional
+    @Modifying(clearAutomatically = true)
+    @Query(value = "DELETE FROM chat_message_reaction WHERE id IN " +
+                   "(SELECT id FROM (SELECT r.id FROM chat_message_reaction r " +
+                   "JOIN chat_message m ON r.msg_id = m.id " +
+                   "WHERE m.created_at < :cutoff " +
+                   "ORDER BY r.id ASC LIMIT :chunkSize) AS tmp)",
+           nativeQuery = true)
+    int deleteReactionsForExpiredMessagesChunk(@Param("cutoff") LocalDateTime cutoff,
+                                               @Param("chunkSize") int chunkSize);
 }
