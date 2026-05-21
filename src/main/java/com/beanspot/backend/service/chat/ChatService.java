@@ -26,6 +26,7 @@ import org.springframework.data.domain.Slice;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -193,6 +194,38 @@ public class ChatService {
 
         chatParticipantRepository.delete(participant);
         chatRoomRepository.decrementParticipantCount(roomId);
+    }
+
+    public List<ChatMessageDto> getArchivedMessages(Long roomId, Long userId, Long lastMessageId, int size) {
+        chatRoomRepository.findById(roomId)
+                .orElseThrow(() -> new CustomException(ErrorCode.CHAT_ROOM_NOT_FOUND));
+
+        chatParticipantRepository.findByChatRoomIdAndUser_Id(roomId, userId)
+                .orElseThrow(() -> new CustomException(ErrorCode.CHAT_NOT_PARTICIPANT));
+
+        LocalDateTime cutoff = LocalDateTime.now().minusDays(7);
+        Pageable pageable = PageRequest.of(0, size);
+
+        Slice<ChatMessage> slice = (lastMessageId == null)
+                ? chatMessageRepository.findArchiveByChatRoomId(roomId, cutoff, pageable)
+                : chatMessageRepository.findArchiveByChatRoomIdAndIdLessThan(roomId, cutoff, lastMessageId, pageable);
+
+        List<ChatMessageDto> messages = new ArrayList<>(slice.getContent().stream()
+                .map(entity -> ChatMessageDto.builder()
+                        .messageId(entity.getId())
+                        .msgType(entity.getMsgType())
+                        .roomId(entity.getChatRoom().getId())
+                        .sender(entity.getSender().getNickname())
+                        .content(entity.getContent())
+                        .parentMsgId(entity.getParentMsgId())
+                        .reactionCount(entity.getReactionCount())
+                        .reactions(List.of())
+                        .createdAt(entity.getCreatedAt())
+                        .build())
+                .toList());
+
+        Collections.reverse(messages);
+        return messages;
     }
 
     private ChatRoomResponse joinExistingChatRoom(User user, ChatRoom room) {

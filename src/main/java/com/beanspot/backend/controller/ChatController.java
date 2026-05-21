@@ -141,4 +141,15 @@ public class ChatController {
             @CurrentUserId Long userId) {
         return ApiResponse.ok(chatService.getChatMessages(roomId, userId, lastMessageId, size));
     }
+
+    @Operation(summary = "7일 이전 메시지 조회 (클라이언트 동기화용)",
+               description = "서버에서 삭제 예정인 7일 이전 메시지를 조회합니다. 클라이언트 로컬 DB 동기화에 사용하세요.")
+    @GetMapping("/rooms/{roomId}/messages/archive")
+    public ApiResponse<List<ChatMessageDto>> getArchivedMessages(
+            @PathVariable Long roomId,
+            @RequestParam(required = false) Long lastMessageId,
+            @RequestParam(defaultValue = "50") int size,
+            @CurrentUserId Long userId) {
+        return ApiResponse.ok(chatService.getArchivedMessages(roomId, userId, lastMessageId, size));
+    }
 }
