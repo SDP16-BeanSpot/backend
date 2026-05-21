@@ -1,6 +1,7 @@
 package com.beanspot.backend.common.response;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.beanspot.backend.common.exception.ErrorCode;
 import com.beanspot.backend.common.exception.ExceptionDto;
 import com.beanspot.backend.common.exception.CustomException;
 import org.springframework.http.HttpStatus;
@@ -24,6 +25,10 @@ public record ApiResponse<T>(
     }
     public static <T> ApiResponse<T> fail(CustomException e) {
         return new ApiResponse<>(e.getErrorCode().getHttpStatus(), false, null, ExceptionDto.of(e.getErrorCode()));
+    }
+
+    public static <T> ApiResponse<T> fail(ErrorCode errorCode, String message) {
+        return new ApiResponse<>(errorCode.getHttpStatus(), false, null, ExceptionDto.of(errorCode, message));
     }
 }
 

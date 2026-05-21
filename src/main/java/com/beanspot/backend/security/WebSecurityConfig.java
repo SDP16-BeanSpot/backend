@@ -30,13 +30,17 @@ public class WebSecurityConfig {
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/api/admin/**").hasRole("ADMIN")
                         .requestMatchers("/",
+                                "/index.html",
+                                "/stomp-test.html",
                                 "/api/auth/**",
+                                "/actuator/health",
                                 "/swagger-ui/**",
                                 "/v3/api-docs/**",
                                 "/webjars/**",
                                 "/docs/**",
                                 "/actuator/health").permitAll()
                                 "/docs/**").permitAll()
+
                         // 웹소켓 엔드포인트에 대한 접근 허용
                         .requestMatchers("/ws-stomp/**").permitAll()
                         .anyRequest().authenticated()

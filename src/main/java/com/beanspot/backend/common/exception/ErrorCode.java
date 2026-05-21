@@ -42,14 +42,25 @@ public enum ErrorCode {
     // ==================== ANNOUNCEMENT (31xxx) ====================
     ANNOUNCEMENT_NOT_FOUND(31001, HttpStatus.NOT_FOUND, "해당 공고를 찾을 수 없습니다."),
 
-    // ==================== NOTIFICATION (41xxx) ====================
-    NOTIFICATION_SETTING_NOT_FOUND(41001, HttpStatus.NOT_FOUND, "해당 알림을 찾을 수 없습니다."),
-    INVALID_CATEGORY_TYPE(41002, HttpStatus.BAD_REQUEST, "유효하지 않은 알림 카테고리 타입입니다."),
-    INVALID_OPTION_TYPE(41003, HttpStatus.BAD_REQUEST, "유효하지 않은 상세 옵션 타입입니다."),
-    KEYWORD_LIMIT_EXCEEDED(41004, HttpStatus.BAD_REQUEST, "키워드는 최대 30개까지 등록 가능합니다."),
-    DUPLICATE_KEYWORD(41005, HttpStatus.CONFLICT, "이미 등록된 키워드입니다."),
-    KEYWORD_NOT_FOUND(41006, HttpStatus.NOT_FOUND, "해당 키워드를 찾을 수 없습니다."),
-    NOTIFICATION_HISTORY_NOT_FOUND(41007, HttpStatus.NOT_FOUND, "해당 알림 내역을 찾을 수 없습니다."),
+    // ==================== NOTIFICATION (32xxx) ====================
+    NOTIFICATION_SETTING_NOT_FOUND(32001, HttpStatus.NOT_FOUND, "해당 알림을 찾을 수 없습니다."),
+    INVALID_CATEGORY_TYPE(32002, HttpStatus.BAD_REQUEST, "유효하지 않은 알림 카테고리 타입입니다."),
+    INVALID_OPTION_TYPE(32003, HttpStatus.BAD_REQUEST, "유효하지 않은 상세 옵션 타입입니다."),
+    KEYWORD_LIMIT_EXCEEDED(32004, HttpStatus.BAD_REQUEST, "키워드는 최대 30개까지 등록 가능합니다."),
+    DUPLICATE_KEYWORD(32005, HttpStatus.CONFLICT, "이미 등록된 키워드입니다."),
+    KEYWORD_NOT_FOUND(32006, HttpStatus.NOT_FOUND, "해당 키워드를 찾을 수 없습니다."),
+    NOTIFICATION_HISTORY_NOT_FOUND(32007, HttpStatus.NOT_FOUND, "해당 알림 내역을 찾을 수 없습니다."),
+    // ==================== Chat (41xxx) ====================
+    CHAT_ROOM_NOT_FOUND(41001, HttpStatus.NOT_FOUND, "존재하지 않는 채팅방입니다."),
+    CHAT_NOT_PARTICIPANT(41002, HttpStatus.FORBIDDEN, "채팅방 참여자가 아닙니다."),
+    CHAT_MESSAGE_NOT_FOUND(41003, HttpStatus.NOT_FOUND, "존재하지 않는 메시지입니다."),
+
+    // ==================== Report (51xxx) ====================
+    REPORT_NOT_FOUND(51001, HttpStatus.NOT_FOUND, "존재하지 않는 신고입니다."),
+    REPORT_ALREADY_EXISTS(51002, HttpStatus.CONFLICT, "이미 신고한 메시지입니다."),
+    REPORT_SELF_NOT_ALLOWED(51003, HttpStatus.BAD_REQUEST, "자신을 신고할 수 없습니다."),
+    REPORT_TARGET_NOT_ALLOWED(51004, HttpStatus.BAD_REQUEST, "신고할 수 없는 메시지입니다."),
+    REPORT_ALREADY_PROCESSED(51005, HttpStatus.CONFLICT, "이미 처리된 신고입니다."),
     ;
 
 

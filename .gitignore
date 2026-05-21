@@ -1,4 +1,6 @@
 HELP.md
+stomp-test.html
+src/main/resources/static/index.html
 .gradle
 build/
 !gradle/wrapper/gradle-wrapper.jar

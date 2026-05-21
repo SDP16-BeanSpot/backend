@@ -1,0 +1,1 @@
+ALTER TABLE chat_participant ADD COLUMN pinned_at DATETIME(6) DEFAULT NULL;

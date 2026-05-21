@@ -1,3 +1,4 @@
+# develop 브랜치 push 시 EC2 자동 배포 (update)
 name: Deploy To EC2
 on:
   push:
@@ -51,7 +52,7 @@ jobs:
           key: ${{ secrets.EC2_PRIVATE_KEY }}
           script: |
             # 1. EC2 서버에서 ECR 로그인
-            aws ecr get-login-password --region ap-northeast-2 | docker login --username AWS --password-stdin 258143933136.dkr.ecr.ap-northeast-2.amazonaws.com
+            aws ecr get-login-password --region ap-northeast-2 | docker login --username AWS --password-stdin ${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.ap-northeast-2.amazonaws.com
             
             # 2. 프로젝트 경로 이동
             cd /home/ubuntu/beanspot
@@ -63,4 +64,4 @@ jobs:
             docker rm -f beanspot-app || true
             
             # 5. 새 컨테이너 실행
-            docker compose up -d app
+            docker-compose up -d app
