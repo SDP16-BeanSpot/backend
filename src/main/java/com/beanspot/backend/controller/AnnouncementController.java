@@ -9,6 +9,7 @@ import com.beanspot.backend.entity.announcement.AnnouncementType;
 import com.beanspot.backend.entity.search.SortType;
 import com.beanspot.backend.listener.SearchExcutedEvent;
 import com.beanspot.backend.security.CurrentUserId;
+import com.beanspot.backend.service.MypageService;
 import com.beanspot.backend.service.search.RecentSearchService;
 import com.beanspot.backend.service.announcement.AnnouncementService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -35,6 +36,8 @@ public class AnnouncementController {
     private final AnnouncementService announcementService;
     private final RecentSearchService recentSearchService;
     private final ApplicationEventPublisher applicationEventPublisher;
+    private final MypageService mypageService;
+
     @Operation(
             summary = "공고 목록 조회",
             description = """
@@ -120,7 +123,7 @@ public class AnnouncementController {
             );
         }
 
-        return announcementService.getAnnouncements(condition);
+        return announcementService.getAnnouncements(userId, condition);
     }
     @Operation(
             summary = "공고 상세 조회",
@@ -135,10 +138,14 @@ public class AnnouncementController {
     })
     @GetMapping("/{id}")
     public ApiResponse<AnnouncementDTO.Detail> getAnnouncementDetail(
+            @Parameter(hidden = true)
+            @CurrentUserId Long userId,
+
             @Parameter(description = "공고 ID", example = "1", required = true)
-            @PathVariable Long id)
-    {
+            @PathVariable Long id
+    ){
         announcementService.increaseViewCount(id);
+        mypageService.saveRecentAnnouncementView(userId, id);
         return ApiResponse.ok(announcementService.getAnnouncementDetail(id));
     }
 }

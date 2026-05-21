@@ -3,6 +3,7 @@ package com.beanspot.backend.dto.announcement;
 import com.beanspot.backend.entity.announcement.AnnouncementDocument;
 import com.beanspot.backend.entity.announcement.Announcement;
 import com.beanspot.backend.entity.announcement.AnnouncementType;
+import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 
@@ -10,6 +11,7 @@ import java.time.LocalDate;
 
 @Builder
 @Getter
+@AllArgsConstructor
 public class AnnouncementSummaryDTO {
     private Long id;
     private String title;
@@ -21,7 +23,9 @@ public class AnnouncementSummaryDTO {
     private LocalDate recruitmentEnd;
     private String thumbnailUrl;
 
-    public static AnnouncementSummaryDTO from(Announcement announcement) {
+    private boolean bookmarked;
+
+    public static AnnouncementSummaryDTO from(Announcement announcement, boolean bookmarked) {
         return AnnouncementSummaryDTO.builder()
                 .id(announcement.getId())
                 .title(announcement.getTitle())
@@ -31,10 +35,11 @@ public class AnnouncementSummaryDTO {
                 .startDate(announcement.getStartDate())
                 .endDate(announcement.getEndDate())
                 .recruitmentEnd(announcement.getRecruitmentEnd())
+                .bookmarked(bookmarked)
                 .build();
     }
 
-    public static AnnouncementSummaryDTO from(AnnouncementDocument doc) {
+    public static AnnouncementSummaryDTO from(AnnouncementDocument doc, boolean bookmarked) {
         return AnnouncementSummaryDTO.builder()
                 .id(doc.getId())
                 .title(doc.getTitle())
@@ -45,6 +50,7 @@ public class AnnouncementSummaryDTO {
                 .endDate(doc.getEndDate())
                 .recruitmentEnd(doc.getRecruitmentEnd())
                 .thumbnailUrl(doc.getThumbnailUrl())
+                .bookmarked(bookmarked)
                 .build();
     }
 }

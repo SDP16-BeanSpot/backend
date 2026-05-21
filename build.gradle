@@ -53,6 +53,7 @@ dependencies {
     testImplementation 'org.springframework.security:spring-security-test'
     testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
     implementation 'org.springdoc:springdoc-openapi-starter-webmvc-ui:2.7.0'
+    implementation 'org.springframework.boot:spring-boot-starter-actuator'
 
     //oauth
     implementation 'org.springframework.boot:spring-boot-starter-oauth2-client'
@@ -77,6 +78,9 @@ dependencies {
     //AWS S3
     implementation 'org.springframework.cloud:spring-cloud-starter-aws:2.2.6.RELEASE'
     implementation 'commons-io:commons-io:2.11.0'
+
+    //FCM - Firebase SDK
+    implementation 'com.google.firebase:firebase-admin:9.1.1'
 
 }
 

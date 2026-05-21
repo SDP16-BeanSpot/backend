@@ -8,7 +8,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 
 public interface AnnouncementService {
-    PageResponse<AnnouncementSummaryDTO> getAnnouncements(AnnouncementSearchConditionDTO condition);
+    PageResponse<AnnouncementSummaryDTO> getAnnouncements(Long userId, AnnouncementSearchConditionDTO condition);
 
     AnnouncementDTO.Detail getAnnouncementDetail(Long id);
 
